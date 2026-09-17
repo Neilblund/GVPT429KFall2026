@@ -3533,7 +3533,7 @@ window.onload = function() {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">Working with the Dynamics of Collective Action data</h1>
+<div class="quarto-title-block"><div><h1 class="title">Working with the Dynamics of Collective Action data</h1><button type="button" class="btn code-tools-button" id="quarto-code-tools-source"><i class="bi"></i> Code</button></div></div>
 </div>
 
 
@@ -4195,6 +4195,8 @@ window.onload = function() {
 </div>
 </div>
 </div>
+<!-- -->
+
 </section>
 </section>
 
@@ -4270,6 +4272,57 @@ window.onload = function() {
         container: window.document.getElementById('quarto-embedded-source-code-modal')
       });
       clipboardModal.on('success', onCopySuccess);
+    }
+    const viewSource = window.document.getElementById('quarto-view-source') ||
+                       window.document.getElementById('quarto-code-tools-source');
+    if (viewSource) {
+      const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+      viewSource.addEventListener("click", function(e) {
+        if (sourceUrl) {
+          // rstudio viewer pane
+          if (/\bcapabilities=\b/.test(window.location)) {
+            window.open(sourceUrl);
+          } else {
+            window.location.href = sourceUrl;
+          }
+        } else {
+          const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+          modal.show();
+        }
+        return false;
+      });
+    }
+    function toggleCodeHandler(show) {
+      return function(e) {
+        const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+        for (let i=0; i<detailsSrc.length; i++) {
+          const details = detailsSrc[i].parentElement;
+          if (show) {
+            details.open = true;
+          } else {
+            details.removeAttribute("open");
+          }
+        }
+        const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+        const fromCls = show ? "hidden" : "unhidden";
+        const toCls = show ? "unhidden" : "hidden";
+        for (let i=0; i<cellCodeDivs.length; i++) {
+          const codeDiv = cellCodeDivs[i];
+          if (codeDiv.classList.contains(fromCls)) {
+            codeDiv.classList.remove(fromCls);
+            codeDiv.classList.add(toCls);
+          } 
+        }
+        return false;
+      }
+    }
+    const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+    if (hideAllCode) {
+      hideAllCode.addEventListener("click", toggleCodeHandler(false));
+    }
+    const showAllCode = window.document.getElementById("quarto-show-all-code");
+    if (showAllCode) {
+      showAllCode.addEventListener("click", toggleCodeHandler(true));
     }
       var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
       var mailtoRegex = new RegExp(/^mailto:/);
@@ -4638,7 +4691,611 @@ window.onload = function() {
       }
     }
   });
-  </script>
+  </script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb58" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb58-1"><a href="#cb58-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb58-2"><a href="#cb58-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> &quot;Working with the Dynamics of Collective Action data&quot;</span></span>
+<span id="cb58-3"><a href="#cb58-3" aria-hidden="true" tabindex="-1"></a><span class="an">editor:</span><span class="co"> visual</span></span>
+<span id="cb58-4"><a href="#cb58-4" aria-hidden="true" tabindex="-1"></a><span class="an">format:</span></span>
+<span id="cb58-5"><a href="#cb58-5" aria-hidden="true" tabindex="-1"></a><span class="co">  html:</span></span>
+<span id="cb58-6"><a href="#cb58-6" aria-hidden="true" tabindex="-1"></a><span class="co">    df-print: paged</span></span>
+<span id="cb58-7"><a href="#cb58-7" aria-hidden="true" tabindex="-1"></a><span class="co">    toc: true</span></span>
+<span id="cb58-8"><a href="#cb58-8" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-location: left</span></span>
+<span id="cb58-9"><a href="#cb58-9" aria-hidden="true" tabindex="-1"></a><span class="co">    toc-depth: 4</span></span>
+<span id="cb58-10"><a href="#cb58-10" aria-hidden="true" tabindex="-1"></a><span class="co">    smaller: true</span></span>
+<span id="cb58-11"><a href="#cb58-11" aria-hidden="true" tabindex="-1"></a><span class="co">    self-contained: true</span></span>
+<span id="cb58-12"><a href="#cb58-12" aria-hidden="true" tabindex="-1"></a><span class="co">    code-annotations: hover</span></span>
+<span id="cb58-13"><a href="#cb58-13" aria-hidden="true" tabindex="-1"></a><span class="co">    code-tools:</span></span>
+<span id="cb58-14"><a href="#cb58-14" aria-hidden="true" tabindex="-1"></a><span class="co">      source: true</span></span>
+<span id="cb58-15"><a href="#cb58-15" aria-hidden="true" tabindex="-1"></a><span class="co">      toggle: true</span></span>
+<span id="cb58-16"><a href="#cb58-16" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb58-17"><a href="#cb58-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-18"><a href="#cb58-18" aria-hidden="true" tabindex="-1"></a><span class="in">```{r setup, include=FALSE}</span></span>
+<span id="cb58-19"><a href="#cb58-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-20"><a href="#cb58-20" aria-hidden="true" tabindex="-1"></a>knitr<span class="sc">::</span>opts_chunk<span class="sc">$</span><span class="fu">set</span>(<span class="at">echo =</span> <span class="cn">TRUE</span>, <span class="at">warning=</span><span class="cn">FALSE</span>, <span class="at">message=</span><span class="cn">FALSE</span>)</span>
+<span id="cb58-21"><a href="#cb58-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-22"><a href="#cb58-22" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-23"><a href="#cb58-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-24"><a href="#cb58-24" aria-hidden="true" tabindex="-1"></a><span class="fu"># Introduction</span></span>
+<span id="cb58-25"><a href="#cb58-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-26"><a href="#cb58-26" aria-hidden="true" tabindex="-1"></a>In the last class we talked about the process of collecting protest event data to study contentious behavior. In this class, we&#39;ll explore a large-scale example of this sort of data set called the <span class="co">[</span><span class="ot">Dynamics of Collective Action (DOCA)</span><span class="co">](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/ABLN5Y)</span> dataset.</span>
+<span id="cb58-27"><a href="#cb58-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-28"><a href="#cb58-28" aria-hidden="true" tabindex="-1"></a>DOCA covers U.S. collective action events from 1960 through 1995. To qualify as an event, an incident must meet the following criteria:</span>
+<span id="cb58-29"><a href="#cb58-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-30"><a href="#cb58-30" aria-hidden="true" tabindex="-1"></a><span class="ss">1.  </span>It must be collective</span>
+<span id="cb58-31"><a href="#cb58-31" aria-hidden="true" tabindex="-1"></a><span class="ss">2.  </span>Participants must make a &quot;claim&quot; that seeks to change society in some important way.</span>
+<span id="cb58-32"><a href="#cb58-32" aria-hidden="true" tabindex="-1"></a><span class="ss">3.  </span>Events are not initiated by elites or management (i.e. they would count an event that was initiated by entirely by elected officials or police)</span>
+<span id="cb58-33"><a href="#cb58-33" aria-hidden="true" tabindex="-1"></a><span class="ss">4.  </span>Must be some form of protest (so fundraising or closed group meetings don&#39;t count)</span>
+<span id="cb58-34"><a href="#cb58-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-35"><a href="#cb58-35" aria-hidden="true" tabindex="-1"></a>The data were gathered by coders systematically skimming the news sections of the New York Times for each day, identifying any articles that mentioned a qualifying event, and then manually coding the characteristics of each protest event. You can read way more than you&#39;d ever want to know about this process in this <span class="co">[</span><span class="ot">document</span><span class="co">](https://dataverse.harvard.edu/api/access/datafile/10991681)</span></span>
+<span id="cb58-36"><a href="#cb58-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-37"><a href="#cb58-37" aria-hidden="true" tabindex="-1"></a>Note DOCA is no longer being continuously updated, and it only covers the U.S., but there are lots of other sources for protest event data. Two of these are worth highlighting here because we&#39;ll explore them in a later class:</span>
+<span id="cb58-38"><a href="#cb58-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-39"><a href="#cb58-39" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="co">[</span><span class="ot">Armed Conflict Location Event Data (ACLED)</span><span class="co">](https://acleddata.com/)</span></span>
+<span id="cb58-40"><a href="#cb58-40" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="co">[</span><span class="ot">Crowd Counting Consortium (CCC)</span><span class="co">](https://ash.harvard.edu/programs/crowd-counting-consortium/)</span></span>
+<span id="cb58-41"><a href="#cb58-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-42"><a href="#cb58-42" aria-hidden="true" tabindex="-1"></a><span class="fu">## Packages</span></span>
+<span id="cb58-43"><a href="#cb58-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-44"><a href="#cb58-44" aria-hidden="true" tabindex="-1"></a>We&#39;ll be making extensive use of <span class="co">[</span><span class="ot">tidyverse packages</span><span class="co">](https://www.tidyverse.org/packages/)</span> in this course. These packages are designed with a shared set of rules in mind and so it can simplify a lot of complicated data analysis problems that would otherwise require you to write a lot of R code.</span>
+<span id="cb58-45"><a href="#cb58-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-46"><a href="#cb58-46" aria-hidden="true" tabindex="-1"></a>For this project, we&#39;re also going to use the <span class="co">[</span><span class="ot">`dataverse`</span><span class="co">](https://cran.r-project.org/web/packages/dataverse/vignettes/A-introduction.html)</span> R package, which will let us download the Dynamics of Collective Action data.</span>
+<span id="cb58-47"><a href="#cb58-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-48"><a href="#cb58-48" aria-hidden="true" tabindex="-1"></a>If you don&#39;t have it already, you&#39;ll want to start by installing the tidyverse packages. Remove the <span class="in">`#`</span> to un-comment the line below, and then run it in R.</span>
+<span id="cb58-49"><a href="#cb58-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-50"><a href="#cb58-50" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, eval=FALSE}</span></span>
+<span id="cb58-51"><a href="#cb58-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-52"><a href="#cb58-52" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages(&quot;tidyverse&quot;)</span></span>
+<span id="cb58-53"><a href="#cb58-53" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages(&#39;dataverse&#39;)</span></span>
+<span id="cb58-54"><a href="#cb58-54" aria-hidden="true" tabindex="-1"></a><span class="co">#install.packages(&quot;haven&quot;)</span></span>
+<span id="cb58-55"><a href="#cb58-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-56"><a href="#cb58-56" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-57"><a href="#cb58-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-58"><a href="#cb58-58" aria-hidden="true" tabindex="-1"></a>Remember that you&#39;ll only need to install a package once, but you&#39;ll need to run <span class="in">`library(packagename)`</span> at the top of your script every time your restart R in order to use any functions from that package.</span>
+<span id="cb58-59"><a href="#cb58-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-60"><a href="#cb58-60" aria-hidden="true" tabindex="-1"></a>We&#39;ll load both the tidyverse and dataverse packages.</span>
+<span id="cb58-61"><a href="#cb58-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-64"><a href="#cb58-64" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-65"><a href="#cb58-65" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb58-66"><a href="#cb58-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-67"><a href="#cb58-67" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dataverse)</span>
+<span id="cb58-68"><a href="#cb58-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-69"><a href="#cb58-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-70"><a href="#cb58-70" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-71"><a href="#cb58-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-72"><a href="#cb58-72" aria-hidden="true" tabindex="-1"></a><span class="fu">## Retrieving the data</span></span>
+<span id="cb58-73"><a href="#cb58-73" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-74"><a href="#cb58-74" aria-hidden="true" tabindex="-1"></a>The Dynamics of Collective Action data is stored on the Harvard Dataverse. You can view more information about the project by checking out this link:</span>
+<span id="cb58-75"><a href="#cb58-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-76"><a href="#cb58-76" aria-hidden="true" tabindex="-1"></a><span class="at">&gt; </span><span class="ot">&lt;https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/ABLN5Y&gt;</span></span>
+<span id="cb58-77"><a href="#cb58-77" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-78"><a href="#cb58-78" aria-hidden="true" tabindex="-1"></a>We *could* download the data by simply going to the webpage and clicking the right links, but the <span class="in">`dataverse`</span> package will let us import this data without having to leave R.</span>
+<span id="cb58-79"><a href="#cb58-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-80"><a href="#cb58-80" aria-hidden="true" tabindex="-1"></a>To do this, we&#39;ll use the function <span class="in">`get_dataframe_by_name`</span>.</span>
+<span id="cb58-81"><a href="#cb58-81" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-84"><a href="#cb58-84" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-85"><a href="#cb58-85" aria-hidden="true" tabindex="-1"></a>doca_raw <span class="ot">&lt;-</span> <span class="fu">get_dataframe_by_name</span>(</span>
+<span id="cb58-86"><a href="#cb58-86" aria-hidden="true" tabindex="-1"></a>  <span class="at">filename =</span> <span class="st">&#39;Dynamics_of_Collective_Action.tab&#39;</span>,  <span class="co">#&lt;1&gt;</span></span>
+<span id="cb58-87"><a href="#cb58-87" aria-hidden="true" tabindex="-1"></a>  <span class="at">dataset =</span> <span class="st">&#39;doi:10.7910/DVN/ABLN5Y&#39;</span>,              <span class="co">#&lt;2&gt;</span></span>
+<span id="cb58-88"><a href="#cb58-88" aria-hidden="true" tabindex="-1"></a>  <span class="at">server =</span> <span class="st">&#39;dataverse.harvard.edu&#39;</span>,                <span class="co">#&lt;3&gt;</span></span>
+<span id="cb58-89"><a href="#cb58-89" aria-hidden="true" tabindex="-1"></a>  <span class="at">original =</span> <span class="cn">TRUE</span>,                                 <span class="co">#&lt;4&gt;  </span></span>
+<span id="cb58-90"><a href="#cb58-90" aria-hidden="true" tabindex="-1"></a>  <span class="at">.f =</span> haven<span class="sc">::</span>read_dta                             <span class="co">#&lt;4&gt;</span></span>
+<span id="cb58-91"><a href="#cb58-91" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb58-92"><a href="#cb58-92" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-93"><a href="#cb58-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-94"><a href="#cb58-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-95"><a href="#cb58-95" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-96"><a href="#cb58-96" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-97"><a href="#cb58-97" aria-hidden="true" tabindex="-1"></a><span class="ss">1.  </span>The name of the file we want to download.</span>
+<span id="cb58-98"><a href="#cb58-98" aria-hidden="true" tabindex="-1"></a><span class="ss">2.  </span>The Digital Object Identifier (DOI). You can find this by going to the &quot;metadata&quot; section on the link above, but you can also see it&#39;s written at the end of the URL.</span>
+<span id="cb58-99"><a href="#cb58-99" aria-hidden="true" tabindex="-1"></a><span class="ss">3.  </span>The dataverse server. This is just the first part of the URL above after <span class="in">`https://`</span></span>
+<span id="cb58-100"><a href="#cb58-100" aria-hidden="true" tabindex="-1"></a><span class="ss">4.  </span>These two arguments will often be left out. In this case, the original data is saved in <span class="in">`.dta`</span> format, so we need to include some additional code to translate this format into something that R can interpret.</span>
+<span id="cb58-101"><a href="#cb58-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-102"><a href="#cb58-102" aria-hidden="true" tabindex="-1"></a>If you&#39;re using Rstudio, you should see <span class="in">`doca`</span> pop up in the window at the top-right of your screen. If you click on the name, you can bring up a view of the data set. Alternatively, you can use the <span class="in">`slice_head`</span> function to view the first few rows in the console.</span>
+<span id="cb58-103"><a href="#cb58-103" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-106"><a href="#cb58-106" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-107"><a href="#cb58-107" aria-hidden="true" tabindex="-1"></a><span class="fu">slice_head</span>(doca_raw, <span class="at">n =</span> <span class="dv">10</span>)</span>
+<span id="cb58-108"><a href="#cb58-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-109"><a href="#cb58-109" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-110"><a href="#cb58-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-111"><a href="#cb58-111" aria-hidden="true" tabindex="-1"></a>One thing you might notice here is that many of the variables are represented with numbers instead of descriptive text. This is common - especially with older data sets - and you&#39;ll normally need to do a little leg work to get things like this into a usable format. In this case, however, I&#39;ve put together a script that will do a lot of the tedious stuff for you automatically.</span>
+<span id="cb58-112"><a href="#cb58-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-113"><a href="#cb58-113" aria-hidden="true" tabindex="-1"></a>To use it, you can just run this script to import the <span class="in">`docaRecoder`</span> function and then apply it to &quot;doca_raw&quot; as shown below:</span>
+<span id="cb58-114"><a href="#cb58-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-117"><a href="#cb58-117" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-118"><a href="#cb58-118" aria-hidden="true" tabindex="-1"></a><span class="fu">source</span>(<span class="st">&#39;https://raw.githubusercontent.com/Neilblund/GVPT429KFall2025/refs/heads/main/Code/doca_recoder.R&#39;</span>)</span>
+<span id="cb58-119"><a href="#cb58-119" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-120"><a href="#cb58-120" aria-hidden="true" tabindex="-1"></a>doca<span class="ot">&lt;-</span><span class="fu">docaRecoder</span>(doca_raw)</span>
+<span id="cb58-121"><a href="#cb58-121" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-122"><a href="#cb58-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-123"><a href="#cb58-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-124"><a href="#cb58-124" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-125"><a href="#cb58-125" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-126"><a href="#cb58-126" aria-hidden="true" tabindex="-1"></a>If you&#39;ve successfully done the recoding, the code below should return a table with &quot;Yes&quot; or &quot;No&quot; values, rather than 1s or 0s:</span>
+<span id="cb58-127"><a href="#cb58-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-130"><a href="#cb58-130" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-131"><a href="#cb58-131" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(doca<span class="sc">$</span>viold)</span>
+<span id="cb58-132"><a href="#cb58-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-133"><a href="#cb58-133" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-134"><a href="#cb58-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-135"><a href="#cb58-135" aria-hidden="true" tabindex="-1"></a><span class="fu">### Using the codebook</span></span>
+<span id="cb58-136"><a href="#cb58-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-137"><a href="#cb58-137" aria-hidden="true" tabindex="-1"></a>When browsing the data, you&#39;ll probably notice that some columns are self-explanatory, but other columns are a little harder to parse: columns names like <span class="in">`particex`</span> don&#39;t have an obvious interpretation.</span>
+<span id="cb58-138"><a href="#cb58-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-139"><a href="#cb58-139" aria-hidden="true" tabindex="-1"></a>Data that we work with in this class will not always come with clear variable names or value labels, so you&#39;ll need to consult the <span class="co">[</span><span class="ot">codebook</span><span class="co">](https://dataverse.harvard.edu/file.xhtml?fileId=10991687&amp;version=1.0)</span> and other documentation, all of which are available on the dataverse site.</span>
+<span id="cb58-140"><a href="#cb58-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-141"><a href="#cb58-141" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Question 1</span></span>
+<span id="cb58-142"><a href="#cb58-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-143"><a href="#cb58-143" aria-hidden="true" tabindex="-1"></a>**Which column contains the year the event occurred? How would I access its values?**</span>
+<span id="cb58-144"><a href="#cb58-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-145"><a href="#cb58-145" aria-hidden="true" tabindex="-1"></a><span class="in">```{r q1}</span></span>
+<span id="cb58-146"><a href="#cb58-146" aria-hidden="true" tabindex="-1"></a><span class="co"># Q1</span></span>
+<span id="cb58-147"><a href="#cb58-147" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-148"><a href="#cb58-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-149"><a href="#cb58-149" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-150"><a href="#cb58-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-151"><a href="#cb58-151" aria-hidden="true" tabindex="-1"></a><span class="fu">## Using pipes</span></span>
+<span id="cb58-152"><a href="#cb58-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-153"><a href="#cb58-153" aria-hidden="true" tabindex="-1"></a>The <span class="in">`|&gt;`</span> operator (or sometimes <span class="in">`%&gt;%`</span>) is a way of making code a little more readable and less repetitive by &quot;piping&quot; data from one function to the next. For instance, if I wanted to find the earliest event in the DOCA data, I could use the <span class="in">`min`</span> function like this:</span>
+<span id="cb58-154"><a href="#cb58-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-157"><a href="#cb58-157" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-158"><a href="#cb58-158" aria-hidden="true" tabindex="-1"></a><span class="fu">min</span>(doca<span class="sc">$</span>evyy, <span class="at">na.rm=</span>T)</span>
+<span id="cb58-159"><a href="#cb58-159" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-160"><a href="#cb58-160" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-161"><a href="#cb58-161" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-162"><a href="#cb58-162" aria-hidden="true" tabindex="-1"></a>Or I could rewrite this statement by piping the data forward like this:</span>
+<span id="cb58-163"><a href="#cb58-163" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-166"><a href="#cb58-166" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-167"><a href="#cb58-167" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">$</span>evyy<span class="sc">|&gt;</span><span class="fu">min</span>(<span class="at">na.rm=</span>T)</span>
+<span id="cb58-168"><a href="#cb58-168" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-169"><a href="#cb58-169" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-170"><a href="#cb58-170" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-171"><a href="#cb58-171" aria-hidden="true" tabindex="-1"></a>This might seem kind of pointless in the current example, but the real advantage becomes more clear when you&#39;re doing a bunch of different things to a bit of data. For instance, if I wanted to calculate the proportion of violent and non-violent protest in 1980 I would need to do the following:</span>
+<span id="cb58-172"><a href="#cb58-172" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-173"><a href="#cb58-173" aria-hidden="true" tabindex="-1"></a><span class="ss">1.  </span>Get the subset of the data where <span class="in">`evyy`</span> (event year) is 1980)</span>
+<span id="cb58-174"><a href="#cb58-174" aria-hidden="true" tabindex="-1"></a><span class="ss">2.  </span>Select the <span class="in">`viold`</span> column (which is &quot;yes&quot; if the protest was violent and &quot;no&quot; otherwise</span>
+<span id="cb58-175"><a href="#cb58-175" aria-hidden="true" tabindex="-1"></a><span class="ss">3.  </span>Create a frequency table using the <span class="in">`table`</span> command</span>
+<span id="cb58-176"><a href="#cb58-176" aria-hidden="true" tabindex="-1"></a><span class="ss">4.  </span>Convert the frequencies to proportions using <span class="in">`prop.table`</span></span>
+<span id="cb58-177"><a href="#cb58-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-178"><a href="#cb58-178" aria-hidden="true" tabindex="-1"></a>I could do all these steps in one line with a series of nested parentheses, but writing the code that way is hard to read:</span>
+<span id="cb58-179"><a href="#cb58-179" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-182"><a href="#cb58-182" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-183"><a href="#cb58-183" aria-hidden="true" tabindex="-1"></a><span class="fu">prop.table</span>(<span class="fu">table</span>(<span class="fu">subset</span>(doca, evyy <span class="sc">==</span> <span class="dv">1980</span>, <span class="at">select =</span> viold)))</span>
+<span id="cb58-184"><a href="#cb58-184" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-185"><a href="#cb58-185" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-186"><a href="#cb58-186" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-187"><a href="#cb58-187" aria-hidden="true" tabindex="-1"></a>Here&#39;s how I could rewrite that using pipes:</span>
+<span id="cb58-188"><a href="#cb58-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-191"><a href="#cb58-191" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-192"><a href="#cb58-192" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-193"><a href="#cb58-193" aria-hidden="true" tabindex="-1"></a>  <span class="fu">subset</span>(evyy<span class="sc">==</span><span class="dv">1980</span>, <span class="at">select=</span>viold)<span class="sc">|&gt;</span></span>
+<span id="cb58-194"><a href="#cb58-194" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>()<span class="sc">|&gt;</span></span>
+<span id="cb58-195"><a href="#cb58-195" aria-hidden="true" tabindex="-1"></a>  <span class="fu">prop.table</span>()</span>
+<span id="cb58-196"><a href="#cb58-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-197"><a href="#cb58-197" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-198"><a href="#cb58-198" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-199"><a href="#cb58-199" aria-hidden="true" tabindex="-1"></a>You&#39;re not required to use this, and there&#39;s never going to be a case where you can only write a particular piece of code by using a pipe. However you will see it come up a fair bit in code I share with the class and other written guides on using tidyverse packages, so at a bare minimum you want to know how to interpret it.</span>
+<span id="cb58-200"><a href="#cb58-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-201"><a href="#cb58-201" aria-hidden="true" tabindex="-1"></a><span class="fu">## Filtering</span></span>
+<span id="cb58-202"><a href="#cb58-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-203"><a href="#cb58-203" aria-hidden="true" tabindex="-1"></a>We&#39;ll often want to remove rows that match a condition from a data set entirely. For instance: there&#39;s a single protest even in the DOCA data set that takes place in 1955. There&#39;s a reason for this in the coding rules, but in practice it makes for a lot of nonsensical plots, so we usually just want to remove it before doing anything.</span>
+<span id="cb58-204"><a href="#cb58-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-205"><a href="#cb58-205" aria-hidden="true" tabindex="-1"></a>The <span class="in">`subset`</span> function is a way to do this in base R, but I&#39;ll often use the <span class="in">`filter`</span> function to accomplish the same thing (mostly out of habit). We can give filter a logical expression and it will keep only rows where that expression is <span class="in">`TRUE`</span></span>
+<span id="cb58-206"><a href="#cb58-206" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-209"><a href="#cb58-209" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-210"><a href="#cb58-210" aria-hidden="true" tabindex="-1"></a><span class="co"># keep only rows that are after 1955</span></span>
+<span id="cb58-211"><a href="#cb58-211" aria-hidden="true" tabindex="-1"></a>doca<span class="ot">&lt;-</span>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-212"><a href="#cb58-212" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(evyy <span class="sc">&gt;</span> <span class="dv">1955</span>)</span>
+<span id="cb58-213"><a href="#cb58-213" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-214"><a href="#cb58-214" aria-hidden="true" tabindex="-1"></a><span class="co"># now the minimum year should be 1960</span></span>
+<span id="cb58-215"><a href="#cb58-215" aria-hidden="true" tabindex="-1"></a><span class="fu">min</span>(doca<span class="sc">$</span>evyy, <span class="at">na.rm=</span>T)</span>
+<span id="cb58-216"><a href="#cb58-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-217"><a href="#cb58-217" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-218"><a href="#cb58-218" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-219"><a href="#cb58-219" aria-hidden="true" tabindex="-1"></a>Keep in mind that a filter removes rows from the data set, so you want to be careful that you&#39;re not throwing away information you might want to use elsewhere in your analysis. If you just want to temporarily get a subset of some data, you can always just assign your results to a new variable:</span>
+<span id="cb58-220"><a href="#cb58-220" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-221"><a href="#cb58-221" aria-hidden="true" tabindex="-1"></a><span class="in">```{r assigning results to a new variable}</span></span>
+<span id="cb58-222"><a href="#cb58-222" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-223"><a href="#cb58-223" aria-hidden="true" tabindex="-1"></a><span class="co"># create a new variable with only the 1980 results</span></span>
+<span id="cb58-224"><a href="#cb58-224" aria-hidden="true" tabindex="-1"></a>doca_1980<span class="ot">&lt;-</span>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-225"><a href="#cb58-225" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(evyy <span class="sc">==</span> <span class="dv">1980</span>)</span>
+<span id="cb58-226"><a href="#cb58-226" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-227"><a href="#cb58-227" aria-hidden="true" tabindex="-1"></a><span class="co"># check the number of rows remaining: </span></span>
+<span id="cb58-228"><a href="#cb58-228" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(doca_1980)</span>
+<span id="cb58-229"><a href="#cb58-229" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-230"><a href="#cb58-230" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-231"><a href="#cb58-231" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Question 2</span></span>
+<span id="cb58-232"><a href="#cb58-232" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-233"><a href="#cb58-233" aria-hidden="true" tabindex="-1"></a>How would I create a data set containing only the events where police were killed?</span>
+<span id="cb58-234"><a href="#cb58-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-235"><a href="#cb58-235" aria-hidden="true" tabindex="-1"></a><span class="in">```{r q2}</span></span>
+<span id="cb58-236"><a href="#cb58-236" aria-hidden="true" tabindex="-1"></a><span class="co">#Q2</span></span>
+<span id="cb58-237"><a href="#cb58-237" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-238"><a href="#cb58-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-239"><a href="#cb58-239" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-240"><a href="#cb58-240" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-241"><a href="#cb58-241" aria-hidden="true" tabindex="-1"></a><span class="fu">## Counting observations</span></span>
+<span id="cb58-242"><a href="#cb58-242" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-243"><a href="#cb58-243" aria-hidden="true" tabindex="-1"></a>Since many social science variables are categorical, many of our analyses will involve counting the number of observations with a particular value. We can use the <span class="in">`table`</span> function to get counts of a particular category for some quick analysis, but we&#39;ll also use the <span class="in">`dplyr`</span> function <span class="in">`count`</span> or <span class="in">`summarize`</span> to get the same result.</span>
+<span id="cb58-244"><a href="#cb58-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-245"><a href="#cb58-245" aria-hidden="true" tabindex="-1"></a><span class="fu">### Using table</span></span>
+<span id="cb58-246"><a href="#cb58-246" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-247"><a href="#cb58-247" aria-hidden="true" tabindex="-1"></a>For instance, if we want to create a table with a count of events in each state, we could run:</span>
+<span id="cb58-248"><a href="#cb58-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-251"><a href="#cb58-251" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-252"><a href="#cb58-252" aria-hidden="true" tabindex="-1"></a><span class="co"># count the number of events per state</span></span>
+<span id="cb58-253"><a href="#cb58-253" aria-hidden="true" tabindex="-1"></a>state_tab<span class="ot">&lt;-</span><span class="fu">table</span>(doca<span class="sc">$</span>state1)</span>
+<span id="cb58-254"><a href="#cb58-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-255"><a href="#cb58-255" aria-hidden="true" tabindex="-1"></a><span class="co"># View the first five states:</span></span>
+<span id="cb58-256"><a href="#cb58-256" aria-hidden="true" tabindex="-1"></a>state_tab[<span class="dv">1</span><span class="sc">:</span><span class="dv">5</span>]</span>
+<span id="cb58-257"><a href="#cb58-257" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-258"><a href="#cb58-258" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-259"><a href="#cb58-259" aria-hidden="true" tabindex="-1"></a>We could sort this from highest to lowest using the <span class="in">`sort`</span> function with the <span class="in">`decreasing=T`</span> option. (the default will sort from highest to lowest, but this will give us values from lowest to highest)</span>
+<span id="cb58-260"><a href="#cb58-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-263"><a href="#cb58-263" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-264"><a href="#cb58-264" aria-hidden="true" tabindex="-1"></a><span class="fu">sort</span>(state_tab, <span class="at">decreasing=</span>T)</span>
+<span id="cb58-265"><a href="#cb58-265" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-266"><a href="#cb58-266" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-267"><a href="#cb58-267" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-268"><a href="#cb58-268" aria-hidden="true" tabindex="-1"></a>And we can use the <span class="in">`[]`</span> operator to get a subset of the data. This code translates as &quot;sort the data from highest to lowest, and then show the 1st through the 10th value&quot;:</span>
+<span id="cb58-269"><a href="#cb58-269" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-272"><a href="#cb58-272" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-273"><a href="#cb58-273" aria-hidden="true" tabindex="-1"></a>sorted_tab <span class="ot">&lt;-</span> <span class="fu">sort</span>(state_tab, <span class="at">decreasing=</span>T)</span>
+<span id="cb58-274"><a href="#cb58-274" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-275"><a href="#cb58-275" aria-hidden="true" tabindex="-1"></a>sorted_tab[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span>
+<span id="cb58-276"><a href="#cb58-276" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-277"><a href="#cb58-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-278"><a href="#cb58-278" aria-hidden="true" tabindex="-1"></a>Finally, I can convert the raw frequencies to proportions by using the <span class="in">`prop.table`</span> function</span>
+<span id="cb58-279"><a href="#cb58-279" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-282"><a href="#cb58-282" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-283"><a href="#cb58-283" aria-hidden="true" tabindex="-1"></a><span class="fu">prop.table</span>(sorted_tab)[<span class="dv">1</span><span class="sc">:</span><span class="dv">10</span>]</span>
+<span id="cb58-284"><a href="#cb58-284" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-285"><a href="#cb58-285" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-286"><a href="#cb58-286" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-287"><a href="#cb58-287" aria-hidden="true" tabindex="-1"></a>Why are there so many more New York events? Does this real differences in protest activity or is there some other explanation?</span>
+<span id="cb58-288"><a href="#cb58-288" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-289"><a href="#cb58-289" aria-hidden="true" tabindex="-1"></a><span class="fu">### Using count</span></span>
+<span id="cb58-290"><a href="#cb58-290" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-291"><a href="#cb58-291" aria-hidden="true" tabindex="-1"></a>The <span class="in">`table`</span> function works for quick analyses, but we&#39;ll often use the dplyr <span class="in">`count`</span> function instead. You&#39;ll notice some differences in the way output from <span class="in">`count`</span> vs. <span class="in">`table`</span> are formatted, but both should be reasonably straightforward to interpret:</span>
+<span id="cb58-292"><a href="#cb58-292" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-295"><a href="#cb58-295" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-296"><a href="#cb58-296" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-297"><a href="#cb58-297" aria-hidden="true" tabindex="-1"></a>  <span class="co"># count the number of events by state and sort</span></span>
+<span id="cb58-298"><a href="#cb58-298" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(state1, <span class="at">sort=</span>T)<span class="sc">|&gt;</span></span>
+<span id="cb58-299"><a href="#cb58-299" aria-hidden="true" tabindex="-1"></a>  <span class="co"># show the top 10 rows</span></span>
+<span id="cb58-300"><a href="#cb58-300" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n=</span><span class="dv">10</span>)</span>
+<span id="cb58-301"><a href="#cb58-301" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-302"><a href="#cb58-302" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-303"><a href="#cb58-303" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-304"><a href="#cb58-304" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-305"><a href="#cb58-305" aria-hidden="true" tabindex="-1"></a>To turn my raw counts into proportions, I&#39;ll need to divide <span class="in">`n`</span> (the count of events per state) by the total number of events (the sum of <span class="in">`n`</span>).</span>
+<span id="cb58-306"><a href="#cb58-306" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-307"><a href="#cb58-307" aria-hidden="true" tabindex="-1"></a>To do this, I&#39;ll use the <span class="in">`mutate`</span> function to add a new variable to my data:</span>
+<span id="cb58-308"><a href="#cb58-308" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-311"><a href="#cb58-311" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-312"><a href="#cb58-312" aria-hidden="true" tabindex="-1"></a>state_proportions <span class="ot">&lt;-</span> doca<span class="sc">|&gt;</span></span>
+<span id="cb58-313"><a href="#cb58-313" aria-hidden="true" tabindex="-1"></a>  <span class="co"># count the number of events by state and sort</span></span>
+<span id="cb58-314"><a href="#cb58-314" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(state1, <span class="at">sort=</span>T)<span class="sc">|&gt;</span></span>
+<span id="cb58-315"><a href="#cb58-315" aria-hidden="true" tabindex="-1"></a>  <span class="co"># use mutate to add a new column </span></span>
+<span id="cb58-316"><a href="#cb58-316" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">proportion =</span> n<span class="sc">/</span><span class="fu">sum</span>(n))</span>
+<span id="cb58-317"><a href="#cb58-317" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-318"><a href="#cb58-318" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-319"><a href="#cb58-319" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-320"><a href="#cb58-320" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-321"><a href="#cb58-321" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Question 3</span></span>
+<span id="cb58-322"><a href="#cb58-322" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-323"><a href="#cb58-323" aria-hidden="true" tabindex="-1"></a>**How would I calculate the number of events per year using the count function? How would I calculate this for violent protests only?**</span>
+<span id="cb58-324"><a href="#cb58-324" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-325"><a href="#cb58-325" aria-hidden="true" tabindex="-1"></a><span class="in">```{r q3}</span></span>
+<span id="cb58-326"><a href="#cb58-326" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb58-327"><a href="#cb58-327" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-328"><a href="#cb58-328" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-329"><a href="#cb58-329" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-330"><a href="#cb58-330" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-331"><a href="#cb58-331" aria-hidden="true" tabindex="-1"></a><span class="fu">## Making comparisons</span></span>
+<span id="cb58-332"><a href="#cb58-332" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-333"><a href="#cb58-333" aria-hidden="true" tabindex="-1"></a>When making inferences, we often need to make a comparison across one or more groups. For instance, if someone argued that &quot;protests where counter demonstrators were present were more likely to become violent compared to protests without them&quot;, then I would want to:</span>
+<span id="cb58-334"><a href="#cb58-334" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-335"><a href="#cb58-335" aria-hidden="true" tabindex="-1"></a><span class="ss">1.  </span>count the number of events with and without counter demonstrators</span>
+<span id="cb58-336"><a href="#cb58-336" aria-hidden="true" tabindex="-1"></a><span class="ss">2.  </span>calculate the proportion of events in each group that were violent vs. non-violent.</span>
+<span id="cb58-337"><a href="#cb58-337" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-338"><a href="#cb58-338" aria-hidden="true" tabindex="-1"></a>We can easily add another variable to the count function like this (and we can use the <span class="in">`drop_na`</span> function to remove missing data)</span>
+<span id="cb58-339"><a href="#cb58-339" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-342"><a href="#cb58-342" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-343"><a href="#cb58-343" aria-hidden="true" tabindex="-1"></a>vc_count<span class="ot">&lt;-</span>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-344"><a href="#cb58-344" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(counterd, viold)<span class="sc">|&gt;</span></span>
+<span id="cb58-345"><a href="#cb58-345" aria-hidden="true" tabindex="-1"></a>  <span class="co"># remove rows with missing data:</span></span>
+<span id="cb58-346"><a href="#cb58-346" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>()</span>
+<span id="cb58-347"><a href="#cb58-347" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-348"><a href="#cb58-348" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-349"><a href="#cb58-349" aria-hidden="true" tabindex="-1"></a>vc_count</span>
+<span id="cb58-350"><a href="#cb58-350" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-351"><a href="#cb58-351" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-352"><a href="#cb58-352" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-353"><a href="#cb58-353" aria-hidden="true" tabindex="-1"></a>... but how do we accomplish step 2 and calculate the proportions within each group? The code we used earlier doesn&#39;t quite give us what we want because it divides each count by the total number of protest events. But we actually want the proportion of violent protests among protests with counter-demonstrators and those without.</span>
+<span id="cb58-354"><a href="#cb58-354" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-357"><a href="#cb58-357" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-358"><a href="#cb58-358" aria-hidden="true" tabindex="-1"></a>vc_count<span class="sc">|&gt;</span></span>
+<span id="cb58-359"><a href="#cb58-359" aria-hidden="true" tabindex="-1"></a>  <span class="co"># count the number of events by state and sort</span></span>
+<span id="cb58-360"><a href="#cb58-360" aria-hidden="true" tabindex="-1"></a>  <span class="co"># use mutate to add a new column </span></span>
+<span id="cb58-361"><a href="#cb58-361" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">proportion =</span> n<span class="sc">/</span><span class="fu">sum</span>(n))</span>
+<span id="cb58-362"><a href="#cb58-362" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-363"><a href="#cb58-363" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-364"><a href="#cb58-364" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-365"><a href="#cb58-365" aria-hidden="true" tabindex="-1"></a>To do get this, we can use the <span class="in">`group_by`</span> function to group rows together based on a a selected characteristic. On its own, <span class="in">`group_by`</span> doesn&#39;t do much, but when we use it with <span class="in">`mutate`</span>, we get a different result:</span>
+<span id="cb58-366"><a href="#cb58-366" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-369"><a href="#cb58-369" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-370"><a href="#cb58-370" aria-hidden="true" tabindex="-1"></a>proportion_by_group<span class="ot">&lt;-</span>vc_count<span class="sc">|&gt;</span></span>
+<span id="cb58-371"><a href="#cb58-371" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(counterd)<span class="sc">|&gt;</span></span>
+<span id="cb58-372"><a href="#cb58-372" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">proportion =</span> n <span class="sc">/</span><span class="fu">sum</span>(n))</span>
+<span id="cb58-373"><a href="#cb58-373" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-374"><a href="#cb58-374" aria-hidden="true" tabindex="-1"></a>proportion_by_group</span>
+<span id="cb58-375"><a href="#cb58-375" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-376"><a href="#cb58-376" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-377"><a href="#cb58-377" aria-hidden="true" tabindex="-1"></a>Based on these results, we should be able to tell whether events with counter-demonstrators were more likely to turn violent.</span>
+<span id="cb58-378"><a href="#cb58-378" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-381"><a href="#cb58-381" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-382"><a href="#cb58-382" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-383"><a href="#cb58-383" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-384"><a href="#cb58-384" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Question 4</span></span>
+<span id="cb58-385"><a href="#cb58-385" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-386"><a href="#cb58-386" aria-hidden="true" tabindex="-1"></a><span class="in">`propdam`</span> is a &quot;Yes/No&quot; variable that indicates whether property damage occurred at an event. <span class="in">`smonamed`</span> is a &quot;Yes/No&quot; variable that indicates whether a social movement organization was involved in the event. **Is property damage more or less likely at events where a social movement organization was involved?**</span>
+<span id="cb58-387"><a href="#cb58-387" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-388"><a href="#cb58-388" aria-hidden="true" tabindex="-1"></a><span class="in">```{r q4}</span></span>
+<span id="cb58-389"><a href="#cb58-389" aria-hidden="true" tabindex="-1"></a><span class="co">#</span></span>
+<span id="cb58-390"><a href="#cb58-390" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-391"><a href="#cb58-391" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-392"><a href="#cb58-392" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-393"><a href="#cb58-393" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-394"><a href="#cb58-394" aria-hidden="true" tabindex="-1"></a><span class="fu">## Recoding with `case_when`</span></span>
+<span id="cb58-395"><a href="#cb58-395" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-396"><a href="#cb58-396" aria-hidden="true" tabindex="-1"></a>In many cases, we may want to collapse categorical variables or create new ones based on one or more conditions. For instance: the <span class="in">`gen_claim1, gen_claim2, gen_claim3, gen_claim4`</span> variables are used to indicate up to four different claims or concerns made by protesters at each event.</span>
+<span id="cb58-397"><a href="#cb58-397" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-398"><a href="#cb58-398" aria-hidden="true" tabindex="-1"></a>Somewhat confusingly, *protests both for and against a particular case can be counted under the same claim category*. So, we can see that a substantial share of protests listed related to African American Civil Rights were actually protests in opposition to the Civil Rights Movement:</span>
+<span id="cb58-399"><a href="#cb58-399" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-402"><a href="#cb58-402" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-403"><a href="#cb58-403" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-404"><a href="#cb58-404" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(gen_claim1 <span class="sc">==</span> <span class="st">&#39;Civil Rights--African Americans&#39;</span>)<span class="sc">|&gt;</span></span>
+<span id="cb58-405"><a href="#cb58-405" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(gen_claim1, val1)</span>
+<span id="cb58-406"><a href="#cb58-406" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-407"><a href="#cb58-407" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-408"><a href="#cb58-408" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-409"><a href="#cb58-409" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-410"><a href="#cb58-410" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-411"><a href="#cb58-411" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-412"><a href="#cb58-412" aria-hidden="true" tabindex="-1"></a>We might want to create a new variable that allows us to distinguish between pro- and anti- AA Civil Rights demonstrations.</span>
+<span id="cb58-413"><a href="#cb58-413" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-414"><a href="#cb58-414" aria-hidden="true" tabindex="-1"></a>An easy way to do this using dplyr functions is with <span class="in">`case_when`</span>. The basic syntax here will be <span class="in">`case_when(variable == somevalue ~ &quot;label&quot;)`</span> . Which you can interpret as &quot;if the statement is true, then assign this label.</span>
+<span id="cb58-415"><a href="#cb58-415" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-416"><a href="#cb58-416" aria-hidden="true" tabindex="-1"></a>Here&#39;s an example of how I might use this to create a new variable that categorizes protests as either &quot;Pro African American Civil Rights&quot;, &quot;Anti African American Civil Rights&quot;, or &quot;Neither&quot; based on the first general claim code:</span>
+<span id="cb58-417"><a href="#cb58-417" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-420"><a href="#cb58-420" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-421"><a href="#cb58-421" aria-hidden="true" tabindex="-1"></a>doca<span class="ot">&lt;-</span>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-422"><a href="#cb58-422" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb58-423"><a href="#cb58-423" aria-hidden="true" tabindex="-1"></a>    <span class="at">aa_civil_rights =</span> </span>
+<span id="cb58-424"><a href="#cb58-424" aria-hidden="true" tabindex="-1"></a>      <span class="fu">case_when</span>(gen_claim1 <span class="sc">==</span> <span class="st">&#39;Civil Rights--African Americans&#39;</span> <span class="sc">&amp;</span> val1 <span class="sc">==</span> <span class="st">&quot;In favor&quot;</span> <span class="sc">~</span> <span class="st">&quot;Pro AA Civil Rights&quot;</span>,</span>
+<span id="cb58-425"><a href="#cb58-425" aria-hidden="true" tabindex="-1"></a>    gen_claim1 <span class="sc">==</span> <span class="st">&#39;Civil Rights--African Americans&#39;</span> <span class="sc">&amp;</span> val1 <span class="sc">==</span> <span class="st">&quot;In opposition&quot;</span> <span class="sc">~</span> <span class="st">&quot;Anti AA Civil Rights&quot;</span>,</span>
+<span id="cb58-426"><a href="#cb58-426" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> <span class="st">&quot;Neither&quot;</span></span>
+<span id="cb58-427"><a href="#cb58-427" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb58-428"><a href="#cb58-428" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb58-429"><a href="#cb58-429" aria-hidden="true" tabindex="-1"></a>    </span>
+<span id="cb58-430"><a href="#cb58-430" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-431"><a href="#cb58-431" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-432"><a href="#cb58-432" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(aa_civil_rights)</span>
+<span id="cb58-433"><a href="#cb58-433" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-434"><a href="#cb58-434" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-435"><a href="#cb58-435" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-436"><a href="#cb58-436" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-437"><a href="#cb58-437" aria-hidden="true" tabindex="-1"></a><span class="fu">#### Question 5</span></span>
+<span id="cb58-438"><a href="#cb58-438" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-439"><a href="#cb58-439" aria-hidden="true" tabindex="-1"></a>**Since there can be up to four general claims for any given protest, how would I create a new variable that indicates whether any of the four listed claims dealt with African American civil rights issues?**</span>
+<span id="cb58-440"><a href="#cb58-440" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-443"><a href="#cb58-443" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-444"><a href="#cb58-444" aria-hidden="true" tabindex="-1"></a><span class="co"># Q5</span></span>
+<span id="cb58-445"><a href="#cb58-445" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-446"><a href="#cb58-446" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-447"><a href="#cb58-447" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-448"><a href="#cb58-448" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-449"><a href="#cb58-449" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-450"><a href="#cb58-450" aria-hidden="true" tabindex="-1"></a><span class="fu">## Plotting a result</span></span>
+<span id="cb58-451"><a href="#cb58-451" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-452"><a href="#cb58-452" aria-hidden="true" tabindex="-1"></a>You can use <span class="in">`ggplot`</span> to create graphics from the data we&#39;ve assembled here.</span>
+<span id="cb58-453"><a href="#cb58-453" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-454"><a href="#cb58-454" aria-hidden="true" tabindex="-1"></a>We&#39;ll get more into the mechanics of using <span class="in">`ggplot`</span> in later classes, but just to get a basic sense of how this will work, here&#39;s an example of how you could plot the number of events by year:</span>
+<span id="cb58-455"><a href="#cb58-455" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-458"><a href="#cb58-458" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-459"><a href="#cb58-459" aria-hidden="true" tabindex="-1"></a>yearly_events<span class="ot">&lt;-</span>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-460"><a href="#cb58-460" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(evyy)</span>
+<span id="cb58-461"><a href="#cb58-461" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-462"><a href="#cb58-462" aria-hidden="true" tabindex="-1"></a>event_counts<span class="ot">&lt;-</span><span class="fu">ggplot</span>(yearly_events, <span class="fu">aes</span>(<span class="at">x=</span>evyy, <span class="at">y=</span>n)) <span class="sc">+</span> </span>
+<span id="cb58-463"><a href="#cb58-463" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb58-464"><a href="#cb58-464" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Year&quot;</span>) <span class="sc">+</span></span>
+<span id="cb58-465"><a href="#cb58-465" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Total events&quot;</span>)</span>
+<span id="cb58-466"><a href="#cb58-466" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-467"><a href="#cb58-467" aria-hidden="true" tabindex="-1"></a>event_counts</span>
+<span id="cb58-468"><a href="#cb58-468" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-469"><a href="#cb58-469" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-470"><a href="#cb58-470" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-471"><a href="#cb58-471" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-472"><a href="#cb58-472" aria-hidden="true" tabindex="-1"></a>We can break this down one step at a time to get a better sense of what&#39;s happening:</span>
+<span id="cb58-473"><a href="#cb58-473" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-474"><a href="#cb58-474" aria-hidden="true" tabindex="-1"></a>The first two lines in the code above just count the number of events by year.</span>
+<span id="cb58-475"><a href="#cb58-475" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-478"><a href="#cb58-478" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-479"><a href="#cb58-479" aria-hidden="true" tabindex="-1"></a>yearly_events<span class="ot">&lt;-</span>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-480"><a href="#cb58-480" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(evyy)</span>
+<span id="cb58-481"><a href="#cb58-481" aria-hidden="true" tabindex="-1"></a>yearly_events</span>
+<span id="cb58-482"><a href="#cb58-482" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-483"><a href="#cb58-483" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-484"><a href="#cb58-484" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-485"><a href="#cb58-485" aria-hidden="true" tabindex="-1"></a>The next command tells R to create a <span class="in">`ggplot`</span> object that will use the <span class="in">`yearly_events`</span> data we just created. the <span class="in">`aes(x=evyy, y=n))`</span> portion specifies what variables from our data set will go on the x and y axes. (But notice that we haven&#39;t actually plotted the data here, we&#39;ve just set up an empty space)</span>
+<span id="cb58-486"><a href="#cb58-486" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-489"><a href="#cb58-489" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-490"><a href="#cb58-490" aria-hidden="true" tabindex="-1"></a>event_counts <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(yearly_events, <span class="fu">aes</span>(<span class="at">x=</span>evyy, <span class="at">y=</span>n))</span>
+<span id="cb58-491"><a href="#cb58-491" aria-hidden="true" tabindex="-1"></a>event_counts</span>
+<span id="cb58-492"><a href="#cb58-492" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-493"><a href="#cb58-493" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-494"><a href="#cb58-494" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-495"><a href="#cb58-495" aria-hidden="true" tabindex="-1"></a>Adding <span class="in">`geom_line()`</span> to the plot to tell R to plot a line with the data (the <span class="in">`+`</span> sign for <span class="in">`ggplot`</span> objects works a bit like the <span class="in">`|&gt;`</span> we used above)</span>
+<span id="cb58-496"><a href="#cb58-496" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-499"><a href="#cb58-499" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-500"><a href="#cb58-500" aria-hidden="true" tabindex="-1"></a>event_counts <span class="ot">&lt;-</span> <span class="fu">ggplot</span>(yearly_events, <span class="fu">aes</span>(<span class="at">x=</span>evyy, <span class="at">y=</span>n)) <span class="sc">+</span> </span>
+<span id="cb58-501"><a href="#cb58-501" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>()</span>
+<span id="cb58-502"><a href="#cb58-502" aria-hidden="true" tabindex="-1"></a>event_counts</span>
+<span id="cb58-503"><a href="#cb58-503" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-504"><a href="#cb58-504" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-505"><a href="#cb58-505" aria-hidden="true" tabindex="-1"></a>Finally, we add <span class="in">`xlab`</span> and <span class="in">`ylab`</span> to give a different name to the x and y axis:</span>
+<span id="cb58-506"><a href="#cb58-506" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-509"><a href="#cb58-509" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-510"><a href="#cb58-510" aria-hidden="true" tabindex="-1"></a>event_counts<span class="ot">&lt;-</span><span class="fu">ggplot</span>(yearly_events, <span class="fu">aes</span>(<span class="at">x=</span>evyy, <span class="at">y=</span>n)) <span class="sc">+</span> </span>
+<span id="cb58-511"><a href="#cb58-511" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb58-512"><a href="#cb58-512" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Year&quot;</span>) <span class="sc">+</span></span>
+<span id="cb58-513"><a href="#cb58-513" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Total events&quot;</span>)</span>
+<span id="cb58-514"><a href="#cb58-514" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-515"><a href="#cb58-515" aria-hidden="true" tabindex="-1"></a>event_counts</span>
+<span id="cb58-516"><a href="#cb58-516" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-517"><a href="#cb58-517" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-518"><a href="#cb58-518" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-519"><a href="#cb58-519" aria-hidden="true" tabindex="-1"></a>ggplot makes it really easy to add additional geometries to a single plot. Try adding <span class="in">`+geom_point()`</span> to the <span class="in">`event_counts`</span> graph below:</span>
+<span id="cb58-520"><a href="#cb58-520" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-523"><a href="#cb58-523" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-524"><a href="#cb58-524" aria-hidden="true" tabindex="-1"></a>event_counts<span class="ot">&lt;-</span><span class="fu">ggplot</span>(yearly_events, <span class="fu">aes</span>(<span class="at">x=</span>evyy, <span class="at">y=</span>n)) <span class="sc">+</span> </span>
+<span id="cb58-525"><a href="#cb58-525" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb58-526"><a href="#cb58-526" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Year&quot;</span>) <span class="sc">+</span></span>
+<span id="cb58-527"><a href="#cb58-527" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Total events&quot;</span>)</span>
+<span id="cb58-528"><a href="#cb58-528" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-529"><a href="#cb58-529" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-530"><a href="#cb58-530" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-531"><a href="#cb58-531" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-532"><a href="#cb58-532" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-533"><a href="#cb58-533" aria-hidden="true" tabindex="-1"></a>While R&#39;s base plotting package can do pretty much anything you might want, the advantages of ggplot will become more apparent when we start doing more complicated things like plotting multiple variables in the same plot.</span>
+<span id="cb58-534"><a href="#cb58-534" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-535"><a href="#cb58-535" aria-hidden="true" tabindex="-1"></a>Here&#39;s an example of plotting violent and non-violent events separately. Notice that we only have to change one thing: we add the <span class="in">`color = viold`</span> to the <span class="in">`aes`</span> argument for our initial ggplot:</span>
+<span id="cb58-536"><a href="#cb58-536" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-539"><a href="#cb58-539" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-540"><a href="#cb58-540" aria-hidden="true" tabindex="-1"></a>yearly_events<span class="ot">&lt;-</span>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-541"><a href="#cb58-541" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(evyy, viold)<span class="sc">|&gt;</span></span>
+<span id="cb58-542"><a href="#cb58-542" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>()</span>
+<span id="cb58-543"><a href="#cb58-543" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-544"><a href="#cb58-544" aria-hidden="true" tabindex="-1"></a><span class="fu">ggplot</span>(yearly_events, <span class="fu">aes</span>(<span class="at">x=</span>evyy, <span class="at">y=</span>n, <span class="at">color=</span>viold)) <span class="sc">+</span> </span>
+<span id="cb58-545"><a href="#cb58-545" aria-hidden="true" tabindex="-1"></a>  <span class="fu">geom_line</span>() <span class="sc">+</span></span>
+<span id="cb58-546"><a href="#cb58-546" aria-hidden="true" tabindex="-1"></a>  <span class="fu">xlab</span>(<span class="st">&quot;Year&quot;</span>) <span class="sc">+</span></span>
+<span id="cb58-547"><a href="#cb58-547" aria-hidden="true" tabindex="-1"></a>  <span class="fu">ylab</span>(<span class="st">&quot;Total events&quot;</span>) <span class="sc">+</span></span>
+<span id="cb58-548"><a href="#cb58-548" aria-hidden="true" tabindex="-1"></a>  <span class="co"># adding a legend title:</span></span>
+<span id="cb58-549"><a href="#cb58-549" aria-hidden="true" tabindex="-1"></a>  <span class="fu">labs</span>(<span class="at">color =</span> <span class="st">&#39;Violence used?&#39;</span>)</span>
+<span id="cb58-550"><a href="#cb58-550" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-551"><a href="#cb58-551" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-552"><a href="#cb58-552" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-553"><a href="#cb58-553" aria-hidden="true" tabindex="-1"></a><span class="fu"># Question 6 (Do on your own)</span></span>
+<span id="cb58-554"><a href="#cb58-554" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-555"><a href="#cb58-555" aria-hidden="true" tabindex="-1"></a>Scholars who study protest policing argue that police interactions with protesters started to shift after the 1960s, as more police departments began to adopt less confrontational methods of protest policing. Can we identify this shift in the Dynamics of Collective Action data?</span>
+<span id="cb58-556"><a href="#cb58-556" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-557"><a href="#cb58-557" aria-hidden="true" tabindex="-1"></a>Calculate the proportion of protests where police used some kind of physical force (<span class="in">`police3`</span>) before 1969 and after 1969. State whether your findings are consistent or inconsistent with the argument about changes toward more &quot;gentle&quot; methods of protest policing after the late 60s.</span>
+<span id="cb58-558"><a href="#cb58-558" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-561"><a href="#cb58-561" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-562"><a href="#cb58-562" aria-hidden="true" tabindex="-1"></a><span class="co"># Code here</span></span>
+<span id="cb58-563"><a href="#cb58-563" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-564"><a href="#cb58-564" aria-hidden="true" tabindex="-1"></a>  </span>
+<span id="cb58-565"><a href="#cb58-565" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-566"><a href="#cb58-566" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-567"><a href="#cb58-567" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-568"><a href="#cb58-568" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-569"><a href="#cb58-569" aria-hidden="true" tabindex="-1"></a><span class="fu"># Functions referenced</span></span>
+<span id="cb58-570"><a href="#cb58-570" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-571"><a href="#cb58-571" aria-hidden="true" tabindex="-1"></a><span class="fu">## slice\_\*</span></span>
+<span id="cb58-572"><a href="#cb58-572" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-573"><a href="#cb58-573" aria-hidden="true" tabindex="-1"></a><span class="in">`slice_head`</span>, (and <span class="in">`slice_tail`</span>, <span class="in">`slice_min`</span>, and <span class="in">`slice_max`</span>) will extract a subset of a data set. Slice head just gets the first <span class="in">`n`</span> rows:</span>
+<span id="cb58-574"><a href="#cb58-574" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-577"><a href="#cb58-577" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-578"><a href="#cb58-578" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-579"><a href="#cb58-579" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n=</span><span class="dv">5</span>)</span>
+<span id="cb58-580"><a href="#cb58-580" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-581"><a href="#cb58-581" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-582"><a href="#cb58-582" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-583"><a href="#cb58-583" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-584"><a href="#cb58-584" aria-hidden="true" tabindex="-1"></a><span class="fu">## \|\&gt; (pipes)</span></span>
+<span id="cb58-585"><a href="#cb58-585" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-586"><a href="#cb58-586" aria-hidden="true" tabindex="-1"></a><span class="in">`|&gt;`</span> or the &quot;pipe operator&quot; will take data from the left hand side and &quot;pipe&quot; it to a function on the right hand side. For instance:</span>
+<span id="cb58-587"><a href="#cb58-587" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-590"><a href="#cb58-590" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-591"><a href="#cb58-591" aria-hidden="true" tabindex="-1"></a><span class="fu">nrow</span>(doca)</span>
+<span id="cb58-592"><a href="#cb58-592" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-593"><a href="#cb58-593" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-594"><a href="#cb58-594" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-595"><a href="#cb58-595" aria-hidden="true" tabindex="-1"></a>...can be expressed as:</span>
+<span id="cb58-596"><a href="#cb58-596" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-599"><a href="#cb58-599" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-600"><a href="#cb58-600" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">|&gt;</span><span class="fu">nrow</span>()</span>
+<span id="cb58-601"><a href="#cb58-601" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-602"><a href="#cb58-602" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-603"><a href="#cb58-603" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-604"><a href="#cb58-604" aria-hidden="true" tabindex="-1"></a><span class="fu">## filter</span></span>
+<span id="cb58-605"><a href="#cb58-605" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-606"><a href="#cb58-606" aria-hidden="true" tabindex="-1"></a><span class="in">`filter`</span> will take a logical expression and return rows where that expression evaluates as <span class="in">`TRUE`</span></span>
+<span id="cb58-607"><a href="#cb58-607" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-610"><a href="#cb58-610" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-611"><a href="#cb58-611" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-612"><a href="#cb58-612" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(eventid <span class="sc">==</span> <span class="st">&#39;6001009&#39;</span>)</span>
+<span id="cb58-613"><a href="#cb58-613" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-614"><a href="#cb58-614" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-615"><a href="#cb58-615" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-616"><a href="#cb58-616" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-617"><a href="#cb58-617" aria-hidden="true" tabindex="-1"></a><span class="fu">## count</span></span>
+<span id="cb58-618"><a href="#cb58-618" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-619"><a href="#cb58-619" aria-hidden="true" tabindex="-1"></a><span class="in">`count`</span> will count the number of rows based on one or more groups. (this works very similarly to <span class="in">`table`</span> but it returns a <span class="in">`tibble`</span> object).</span>
+<span id="cb58-620"><a href="#cb58-620" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-623"><a href="#cb58-623" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-624"><a href="#cb58-624" aria-hidden="true" tabindex="-1"></a><span class="co"># counting violent events</span></span>
+<span id="cb58-625"><a href="#cb58-625" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-626"><a href="#cb58-626" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(viold)</span>
+<span id="cb58-627"><a href="#cb58-627" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-628"><a href="#cb58-628" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-629"><a href="#cb58-629" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-630"><a href="#cb58-630" aria-hidden="true" tabindex="-1"></a>You can set the <span class="in">`sort`</span> option to TRUE to sort all of the counts from lowest to highest</span>
+<span id="cb58-631"><a href="#cb58-631" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-634"><a href="#cb58-634" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-635"><a href="#cb58-635" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-636"><a href="#cb58-636" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(viold, <span class="at">sort=</span><span class="cn">TRUE</span>)</span>
+<span id="cb58-637"><a href="#cb58-637" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-638"><a href="#cb58-638" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-639"><a href="#cb58-639" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-640"><a href="#cb58-640" aria-hidden="true" tabindex="-1"></a><span class="fu">## arrange</span></span>
+<span id="cb58-641"><a href="#cb58-641" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-642"><a href="#cb58-642" aria-hidden="true" tabindex="-1"></a><span class="in">`arrange`</span> will filter rows of a data set by some value. Using a <span class="in">`-`</span> in front of a variable name will sort from highest to lowest instead of lowest to highest:</span>
+<span id="cb58-643"><a href="#cb58-643" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-646"><a href="#cb58-646" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-647"><a href="#cb58-647" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-648"><a href="#cb58-648" aria-hidden="true" tabindex="-1"></a>  <span class="co"># sort from highest to lowest</span></span>
+<span id="cb58-649"><a href="#cb58-649" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="sc">-</span>evyy)<span class="sc">|&gt;</span></span>
+<span id="cb58-650"><a href="#cb58-650" aria-hidden="true" tabindex="-1"></a>  <span class="co"># take the top 10 rows</span></span>
+<span id="cb58-651"><a href="#cb58-651" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n=</span><span class="dv">10</span>)</span>
+<span id="cb58-652"><a href="#cb58-652" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-653"><a href="#cb58-653" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-654"><a href="#cb58-654" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-655"><a href="#cb58-655" aria-hidden="true" tabindex="-1"></a><span class="fu">## mutate</span></span>
+<span id="cb58-656"><a href="#cb58-656" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-657"><a href="#cb58-657" aria-hidden="true" tabindex="-1"></a><span class="in">`mutate`</span> will add a new column to a data set. We used it in a prior example to add a total or a proportion to the data set returned from the <span class="in">`count`</span> function:</span>
+<span id="cb58-658"><a href="#cb58-658" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-661"><a href="#cb58-661" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-662"><a href="#cb58-662" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-663"><a href="#cb58-663" aria-hidden="true" tabindex="-1"></a>  <span class="fu">count</span>(state1)<span class="sc">|&gt;</span></span>
+<span id="cb58-664"><a href="#cb58-664" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">total_events =</span> <span class="fu">sum</span>(n))</span>
+<span id="cb58-665"><a href="#cb58-665" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-666"><a href="#cb58-666" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb58-667"><a href="#cb58-667" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-668"><a href="#cb58-668" aria-hidden="true" tabindex="-1"></a><span class="fu">## group_by</span></span>
+<span id="cb58-669"><a href="#cb58-669" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-670"><a href="#cb58-670" aria-hidden="true" tabindex="-1"></a><span class="in">`group_by`</span> is used to create a grouped data frame. On its own, this doesn&#39;t do much, but functions like <span class="in">`mutate`</span> and <span class="in">`slice_head`</span> and <span class="in">`summarize`</span> will allow us to do calculations over groups instead of operating on the entire data set.</span>
+<span id="cb58-671"><a href="#cb58-671" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-672"><a href="#cb58-672" aria-hidden="true" tabindex="-1"></a>For example the code below gets the first event in each year:</span>
+<span id="cb58-673"><a href="#cb58-673" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-676"><a href="#cb58-676" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb58-677"><a href="#cb58-677" aria-hidden="true" tabindex="-1"></a><span class="co"># get the first listed event in each year: </span></span>
+<span id="cb58-678"><a href="#cb58-678" aria-hidden="true" tabindex="-1"></a>doca<span class="sc">|&gt;</span></span>
+<span id="cb58-679"><a href="#cb58-679" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(evyy)<span class="sc">|&gt;</span></span>
+<span id="cb58-680"><a href="#cb58-680" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n=</span><span class="dv">1</span>)</span>
+<span id="cb58-681"><a href="#cb58-681" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb58-682"><a href="#cb58-682" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+</code></pre></div><button title="Copy to Clipboard" class="code-copy-button" data-in-quarto-modal><i class="bi"></i></button></div>
+</div></div></div></div></div>
 </div> <!-- /content -->
 
 

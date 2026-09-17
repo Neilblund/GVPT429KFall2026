@@ -10,6 +10,9 @@ format:
     smaller: true
     self-contained: true
     code-annotations: hover
+    code-tools:
+      source: true
+      toggle: true
 ---
 
 ```{r setup, include=FALSE}
