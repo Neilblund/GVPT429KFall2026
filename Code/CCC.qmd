@@ -1,0 +1,649 @@
+---
+title: "CCC"
+editor: visual
+code-annotations: hover
+format:
+  html:
+    embed-resources: true
+    df-print: paged
+    toc: true
+    toc-location: left
+    toc-depth: 4
+    smaller: true
+    self-contained: true
+    fig-format: svg
+lightbox: true
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+set.seed(1000)
+```
+
+Install these packages (if needed):
+
+```{r, eval=FALSE}
+
+
+install.packages(c("zoo", "paletteer"))
+
+
+
+```
+
+### The CCC data
+
+We'll use data from the Crowd Counting Consortium (CCC). The CCC covers U.S. protest events from 2017 to the present, with new updates each week. These data are collected using a combination of webcrawling, social media analysis, and crowd-sourced contributions. The time frame and geographic scope is narrower compared to sources like ACLED, but they also tend to catch more events and offer a higher level of detail about each one.
+
+You can access the CCC data from the [Harvard Dataverse Site](https://dataverse.harvard.edu/dataverse/crowdcountingconsortium/). Note that they have three separate files that cover different time frames and may contain slightly different coding rules and variables. For the sake of simplicity, we'll work with just the most recent data, but for your own analyses you may want to create a single combined data set.
+
+-   [Website](https://ash.harvard.edu/programs/crowd-counting-consortium/)
+
+-   [Dataverse](https://dataverse.harvard.edu/dataverse/crowdcountingconsortium/)
+
+-   [Codebook for the current wave](https://dataverse.harvard.edu/file.xhtml?fileId=10808412&version=10.1)
+
+We'll start by reading the data in and taking a look at our results
+
+```{r}
+library(tidyverse)
+url<-'https://dataverse.harvard.edu/api/access/datafile/14226873'
+
+ccc<-read_csv(url)|>
+  mutate(event_id = row_number(), # adding a unique identifier for each even
+  valence = factor(valence,       # recoding the valence variable into a factor
+                   levels=c(0, 1, 2), 
+                   labels=c("Other/Neither", "Left-Wing", "Right-Wing")),
+  arrests_any = factor(arrests_any, levels=c(0, 1), labels=c("No", "Yes"))
+  )
+
+
+```
+
+## Basic Descriptives
+
+Take a minute to explore the data and the codebook. Try:
+
+-   Using `valence` to get a count of right vs. left wing protest.
+
+-   Getting the number of total events.
+
+-   Getting a count of events by state.
+
+-   Identifying the proportion of protests that were online.
+
+-   Identify the most recent event covered.
+
+```{r}
+# your code here
+
+
+
+```
+
+## Unnesting, long data, and dummifying
+
+
+If you spend some time with the data, you might notice that many variables (`issue_tags` and `organizations` etc.) can contain multiple values, with each one separated by a semi-colon.
+
+```{r}
+
+
+ccc|>
+  select(date, issue_tags_summary)|>
+  slice_head(n=5)
+
+```
+
+This format is helpful because it allows coders to record events involving multiple issues or groups, but it can make analyses challenging. We can't easily answer questions like "How many demonstrations were about climate change?" because "climate change" might occur in the middle of a string alongside a bunch of other issues.
+
+We'll look at two different methods for representing this kind of nested data, and then walk through how to create each one.
+
+
+::: panel-tabset
+### Long Format
+
+Long format data would get rid of the nesting by creating an additional row for each additional issue. The first event has four tags, there would be 4 rows for that event. Non-nested data such as the date and location would just be duplicated.
+
+```{r}
+#| echo: false
+#| tbl-cap: "Long Format"
+
+library(knitr)
+
+# Table 2
+ccc|>
+  select(date, state, issue_tags_summary)|>
+  slice_head(n =3)|>
+  mutate(issue_tags = str_split(issue_tags_summary, "; "))|>
+  unnest_longer(issue_tags)|>
+  kable()
+
+```
+
+
+### Dummy Format
+
+"Dummy formatting" would create one column for each issue. If an issue was mentioned for an event, then there would be a 1 in that cell. If an issue was not mentioned for an event, the cell would have a value of zero.
+
+```{r}
+#| echo: false
+#| tbl-cap: "Dummy Format"
+
+
+# Table 3
+ccc|>
+  select(date, state, issue_tags_summary)|>
+  slice_head(n =3)|>
+  mutate(issue_tags = str_split(issue_tags_summary, "; "),
+         value =1
+         )|>
+  unnest_longer(issue_tags)|>
+  pivot_wider(
+        names_from = issue_tags,  # create a new column for each tag
+        names_prefix = "issues: ", # prefix each new column with "issue"
+        values_from =value, # fill with 1 if this tag is present
+        values_fill = 0     # fill with 0 if this tag is missing
+        
+         )|>
+  select(-issue_tags_summary)|>
+  kable()
+
+
+```
+:::
+
+
+### Making long data
+
+To make these results use-able for an analysis, we'll need to do some additional reshaping to these variables. I'll use the `str_split` function to split a nested list into a vector of separate elements:
+
+```{r}
+
+str_split("banking and finance; economy; foreign affairs; healthcare; war and peace", pattern = "; ")
+
+```
+
+Doing this to a data frame column will create a list-column where each cell contains multiple values. Then, I can use `unnest_longer` to create 1 new row for each element in this nested list. I'll also add a `event_id` tag so I can tell what tags go with the same events.
+
+```{r}
+
+ccc_issues_long<-ccc|>
+  mutate(
+         issue_tags_separated = str_split(issue_tags_summary, "; ")
+         )|>
+  unnest_longer(issue_tags_separated)
+
+ccc_issues_long|>
+  select(event_id, issue_tags_separated)|>
+  slice_head(n =10)
+
+
+```
+
+Now I can use this result to do things like identify the most common issue tags across the data set:
+
+```{r}
+
+ccc_issues_long|>
+  count(issue_tags_separated)|>
+  arrange(-n)|>
+  slice_head(n =10)
+
+
+```
+
+
+### Making dummy data
+
+To dummify these results, I would follow the same steps I used to get the data into long format, but then I would add a "value" that was equal to 1 for each row, and then use `pivot_wider` to make columns for each issue tag in the entire data set:
+
+```{r}
+
+ccc_dummified<-ccc|>
+  mutate(issue_tags_separated = str_split(issue_tags_summary, "; "),
+         )|>
+  unnest_longer(issue_tags_separated)|>
+  mutate(value = 1)|>                      # create a placeholder value
+  pivot_wider(
+        names_from = issue_tags_separated,  # create a new column for each tag
+        names_prefix = "issue: ", # prefix each new column with "issue"
+        values_from =value, # fill with the placeholder (1) if this tag is present
+        values_fill = 0     # fill with 0 if this tag is missing
+        
+         )
+
+
+ccc_dummified|>
+  select(event_id, starts_with('issue: '))|>
+  slice_head(n = 5)
+
+
+```
+
+Now I have a single row for each issue, just like my original data set, but I also have a data format what would allow me to do something like calculate the proportion of events where animal rights were *at least one* of the issues raised by protesters:
+
+
+```{r}
+
+mean(ccc_dummified$`issue: banking and finance`)
+
+
+```
+With a bit more legwork, I could do something like the code below to get a list of the top 10 protest issues by proportion of events where these issues were raised:
+
+```{r}
+ccc_dummified|>
+  select(starts_with('issue: '))|>          #  select only the issue columns 
+  summarise(across(everything(), mean))|>   # calculate the mean of each column
+  pivot_longer(cols=everything(), names_to='issue', values_to = 'proportion')|> # convert to long format
+  arrange(-proportion)|>              # sort from highest to lowest
+  slice_head(n = 10)                  # show the top 10 issues
+  
+
+```
+
+## Filtering text
+
+
+Another common goal is filtering the data based on some issue or topic. We can filter the CCC data by matching different patterns in the text. For instance, I might be interested in finding protests where students were participants. Here's a simple example of doing that to match events where the string "Students" occurs. (The `str_detect` function simply returns TRUE if the pattern argument is found inside of the string.)
+
+```{r}
+ccc|>
+  filter(str_detect(string = participants, pattern="Students"))|>
+  count()
+
+
+```
+
+However, if you look at the data, you might notice a problem: sometimes "Students" appears with a capital S, other times it appears all lower-case, and other times it might show up as singular rather than plural. So our string search function would miss all of these.
+
+```{r}
+#| echo: false
+ccc|>
+  filter(str_detect(participants, "[sS]tudent"))|>
+  select(participants)|>
+  slice_head(n=5)
+
+```
+
+To get better results, we can use a pattern matching language called a "Regular Expression". Regular expressions can match literal characters (such as the letter "S"), but they can also include things like wildcards ("*" means "match the preceding character 0 or more times) or other characteristics of text ("^" means "match this only if it's at the start of a string").
+
+Regular expressions are a whole topic all on their own, and really mastering them can take a lot of practice, but for simple problems like this one, we can usually come up with a straightforward expression that can pick up on what we want to grab. 
+
+I'll use the following expression to catch student protests `[sS]tudent` The brackets around `[Ss]` translate to "match any one character in this list", so this expression should catch both "Student" and "student". It will also capture "**student**s" since the "student" occurs within that string.
+
+
+```{r}
+ccc|>
+  filter(str_detect(participants, "[sS]tudent"))|>
+  count()
+
+```
+
+I could go one step further here and write an expression that could match events where students, teachers OR professors were mentioned as protest participants. The `"|"` symbol means "or" here:
+
+```{r}
+ccc|>
+  filter(str_detect(participants, "[sS]tudent|[tT]eacher|[Pp]rofessor"))|>
+  select(event_id, date, participants)|>
+  count()
+
+```
+
+
+These kinds of filters can get pretty elaborate. For instance, here's one of the regular expressions that CCC researchers used to identify protests that occurred at colleges and universities:
+
+`college(?! (?:st(reet)?|ave(nue)?|r(oa)?d|cir(cle)?|dr(ive)?\\b|blvd|heights|point|green|athletic))`
+
+The ?! is a negative lookahead, which means "exclude strings that match the following patterns". So this is a way to catch a string like "Goucher College" while excluding strings like "College Avenue"
+
+
+You can read a bit more about using regular expressions [here](https://www.regular-expressions.info/). I generally recommend using a regular expression tester like [regex101.com](https://regex101.com/) to develop and test regular expressions before you write them in code.
+
+
+# Tracking events over time
+
+
+Start by getting a count of the number of events where "immigration" was at least one of the issues tagged:
+
+
+```{r}
+
+
+
+immigration_counts<-ccc|>
+  filter(str_detect(issue_tags_summary, "immigration"))|>
+  count(date)
+
+
+
+
+```
+
+
+Next, we'll need to use the `complete` function to fill in zeros on days where there weren't any events counted.
+
+```{r}
+
+immigration_counts<-immigration_counts|>
+  complete(date = full_seq(date, period=1), # get a complete sequence of days
+           fill=list(n=0)                   # fill empty rows with 0
+           )
+
+
+
+```
+
+
+Finally, we'll create a rolling 30-day count using the rollsum function from the zoo package.
+
+```{r}
+immigration_counts<-immigration_counts|>
+  mutate(rolling_count = zoo::rollsum(n, 
+                                      k=30,  # 30 day rolling window
+                                      na.pad=T)) 
+
+
+
+
+```
+
+
+
+The plot might raise some immediate questions. For instance: what explains the two big spikes in the first half of 2026? Or: why do we see several "plateaus" where it looks like there were high levels of activity for several days at a time? This would be where you might want to do a little exploration: you might use a resource like Factiva or LexisNexis to search for news stories about immigration relation protests during those time periods, or you might try digging into the data itself to find some example events.
+
+
+```{r}
+#| fig-width: 10
+timeline_plot <- ggplot(immigration_counts, aes(x = date, y = rolling_count)) +
+  geom_line() +
+  labs(
+    x = "Event Date",
+    y = "30-day rolling total number of protests",
+    title = 'Immigration-related protests: January 2025 through May 2026',
+    caption = "Source: Crowd Counting Consortium"
+  ) +
+  scale_x_date(date_breaks = "1 month", date_labels = "%b '%y") +
+  theme_classic()
+
+
+timeline_plot
+
+```
+
+I'll use some filtering and selecting to look at some of the more informative variables for a random sample of events that happened in January. Spending a little time looking through these can help us identify unifying themes behind a spike in activity.
+
+```{r}
+ccc|>
+  filter(str_detect(issue_tags_summary, "immigration"))|>
+  filter(date>=as.Date('2026-01-01'),  date<as.Date('2026-02-01'))|> 
+  select(date, state, locality, title, targets,  claims_summary, participant_measures, notes)|> 
+  slice_sample(n = 20)  # random sample of rows
+
+```
+
+
+
+As we spot more events that might be important, we can add these as annotations to our timeline. (Unfortunately, there's not a way to do this that doesn't involve back and forth to correctly identify where annotations should be located so that they're readable.)
+
+```{r}
+#| fig-width: 10
+
+
+
+timeline_plot <- timeline_plot +
+  geom_curve(
+    aes(
+      x = as.Date('2026-01-07') - 40 ,
+      xend = as.Date("2026-01-07"),
+      y = 3000,
+      yend = 2800
+    ),
+    arrow = arrow(
+      length = unit(0.3, "cm"),
+      type = "closed",
+      ends = "last"
+    ),
+    curvature = .5
+  ) +
+  annotate("text",
+           x = as.Date('2026-01-07') - 40,
+           
+           y = 3200,
+           label = 'Killing of Renee Good\n2026-01-07')
+
+timeline_plot
+
+
+
+```
+
+
+
+
+```{r}
+#| fig-width: 10
+
+
+
+timeline_plot <- timeline_plot +
+  geom_curve(
+    aes(
+      x = as.Date('2026-01-24') + 40 ,
+      xend = as.Date("2026-01-24"),
+      y = 4400,
+      yend = 4185
+    ),
+    arrow = arrow(
+      length = unit(0.3, "cm"),
+      type = "closed",
+      ends = "last"
+    ),
+    curvature = -.2
+  ) +
+  annotate("text",
+           x = as.Date('2026-01-24') + 40,
+           y = 4600,
+           label = 'Killing of Alex Pretti\n2026-01-24')
+
+
+timeline_plot
+
+```
+
+```{r}
+#| fig-width: 10
+
+
+timeline_plot <- timeline_plot +
+  geom_curve(
+    aes(
+      x = as.Date('2025-12-04') + 40 ,
+      xend = as.Date("2025-12-04"),
+      y = 500,
+      yend = 400
+    ),
+    arrow = arrow(
+      length = unit(0.3, "cm"),
+      type = "closed",
+      ends = "last"
+    ),
+    curvature = -.2
+  ) +
+  annotate("text",
+           x = as.Date('2025-12-04') + 100,
+           y = 500,
+           label = 'Operation Metro Surge\n2025-12-04')
+timeline_plot  
+
+```
+
+
+
+
+What if we want to compare trends across states? Or see whether Minnesota deviating from the national trend in protest activity after those high-profile shootings?
+
+We can also get a count (or a rolling sum) by day separately by state. We'll use the same `complete` function, but we'll also use the `nesting` function to ensure that we get a complete sequence of days within each group of states.
+
+Then we'll use a filter to select 4 states with high levels of protest activity, and narrow our date range down to look at events that occurred in early 2026. Instead of just looking at the number of events, we'll also look at the estimated number of protest *participants*, so we can see dynamics in the crowd size as well. 
+
+```{r}
+
+event_counts_bystate<-ccc|>
+  filter(str_detect(issue_tags_summary, "immigration"))|>
+  group_by(date, state)|>
+  summarise(n = n(),                        # estimated size
+            size = sum(size_mean, na.rm=T)  # estimated number of participants
+            )|>
+  ungroup() |>
+  complete(date = full_seq(date, period=1), # get a complete sequence of days
+           nesting(state),                  # nesting will complete the sequence within each state
+           fill=list(n=0, size=0)      # fill empty rows with 0
+           )
+  
+
+
+select_counts<-event_counts_bystate|>
+  filter(state%in%c("CA", "WA", "MN", "MA")) |>
+  filter(date>=as.Date('2026-01-01'), date<=as.Date('2026-02-14'))
+
+
+
+
+
+
+
+```
+
+
+Now we'll plot our trends, using color-coding to distinguish the trend lines for different states:
+
+```{r}
+
+select_counts|>
+  ggplot(aes(x=date, y=n, color=state))  + 
+  geom_vline(xintercept=as.Date('2026-01-07'), lty=2) +  # lines to indicate shootings of Good and Pretti
+  geom_vline(xintercept=as.Date("2026-01-24"), lty=2) +  
+  geom_line(lwd=1.2) +
+    labs(
+    x = "Event Date",
+    y = "Daily protests",
+    title = 'Immigration-related protests: January 2026',
+    caption = "Source: Crowd Counting Consortium"
+  ) +
+  scale_x_date(date_breaks = "1 week", date_labels = "%b %d, %Y") + # showing weekly date breaks
+
+  theme_classic() +
+  paletteer::scale_colour_paletteer_d("MetBrewer::Egypt")           # using a different color scheme
+
+```
+
+Minnesota doesn't appear to have deviated much from other states in terms of the *number* of protests, but Minnesota does stand out for having a lot more reported protest participants after Renee Good was shot:
+
+```{r}
+select_counts|>
+  ggplot(aes(x=date, y=size, color=state))  + 
+  geom_vline(xintercept=as.Date('2026-01-07'), lty=2) +  # lines to indicate shootings of Good and Pretti
+  geom_vline(xintercept=as.Date("2026-01-24"), lty=2) +  
+  geom_line(lwd=1.2) +
+    labs(
+    x = "Event Date",
+    y = "Estimated Protest Participants",
+    title = 'Immigration-related protests: January 2025 through May 2026',
+    caption = "Source: Crowd Counting Consortium"
+  ) +
+  scale_x_date(date_breaks = "1 week", date_labels = "%b %d, %Y") + # showing weekly date breaks
+
+  theme_classic() +
+  paletteer::scale_colour_paletteer_d("MetBrewer::Egypt")           # using a different color scheme
+
+
+
+
+
+
+```
+
+
+Using some additional filtering and aggregating, we can also see another effect of the shooting: immigration briefly became the top left-wing issue for January and February.
+
+```{r}
+#| fig-width: 11
+
+top_issues<-ccc|>
+  filter(valence == "Left-Wing")|>
+  mutate(issue_tags = str_split(issue_tags_summary, "; "),
+         month = floor_date(date, unit='month')
+         )|>
+  unnest_longer(issue_tags)|>
+  count(issue_tags, month)|>
+  group_by(month)|>
+  arrange(-n)|>
+  slice_head(n = 1)
+
+  
+ggplot(top_issues, aes(x = month, y = n, fill = issue_tags)) +
+  geom_bar(stat = 'identity') +
+  paletteer::scale_fill_paletteer_d("MetBrewer::Egypt")   +
+  theme_minimal() +
+  labs(x ="Month",
+       y = "Number of events",
+       title = 'Top issue for left-wing protests by month',
+       fill = 'Issue',
+       caption = "Source: Crowd Counting Consortium"
+
+       ) +
+  scale_x_date(date_breaks = "month", date_labels = "%b '%y") 
+
+
+```
+
+
+
+## On your own
+
+### Question 1
+
+The `organizations` variable lists the organizations that were mentioned as being involved in each protest event. Like `issue_tags_summary`, this variable may list multiple values, with each one separated by a semi-colon. 
+
+
+Using one of the unnesting procedures we discussed above, get a table with the 10 `organizations` that were most frequently involved in protests during the time period covered by this data set.
+
+
+```{r}
+
+
+```
+
+
+
+### Question 2
+
+
+Write a regular expression to get a count of events where one of the `participant_measures` included riding bicycles. Write your expression in a way that will ensure you capture common synonyms for "bicycle".
+
+```{r}
+
+
+
+```
+
+### Question 3
+
+Create a line plot showing a rolling count of the number of right-wing protests since January 1, 2026. (hint: use the `valence` variable to identify whether protests were right or left-leaning). Be sure to add appropriate axis labels, title, caption etc. so that your plot is relatively self-explanatory.
+
+Briefly discuss your results and try to offer an explanation for any noteworthy spikes in activity that you can identify.
+
+```{r}
+
+
+
+
+```
+
+
+```
+
