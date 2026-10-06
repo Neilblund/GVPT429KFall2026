@@ -22,16 +22,6 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 set.seed(1000)
 ```
 
-Install these packages (if needed):
-
-```{r, eval=FALSE}
-
-
-install.packages(c("zoo", "paletteer"))
-
-
-
-```
 
 ### The CCC data
 
@@ -45,7 +35,23 @@ You can access the CCC data from the [Harvard Dataverse Site](https://dataverse.
 
 -   [Codebook for the current wave](https://dataverse.harvard.edu/file.xhtml?fileId=10808412&version=10.1)
 
-We'll start by reading the data in and taking a look at our results
+
+
+###Setup and Data import
+
+First, install these packages (if needed):
+
+```{r, eval=FALSE}
+
+
+install.packages(c("zoo", "paletteer"))
+
+
+
+```
+
+
+Next, we'll read the data from Wave 3 of the CCC.
 
 ```{r}
 library(tidyverse)
@@ -74,7 +80,7 @@ Take a minute to explore the data and the codebook. Try:
 
 -   Identifying the proportion of protests that were online.
 
--   Identify the most recent event covered.
+-   Identify the oldest and most recent events covered.
 
 ```{r}
 # your code here
@@ -195,6 +201,32 @@ ccc_issues_long|>
 
 ```
 
+
+Long format data is also useful because it tends to be the format preferred by `ggplot`.
+ 
+Here's an example of using the long-format data to get the top 10 issues mentioned at right-wing protest events:
+
+```{r}
+
+ccc_issues_long|>
+  filter(valence == "Right-Wing")|>
+  count(issue_tags_separated)|>
+  drop_na()|>
+  arrange(-n)|>
+  slice_head(n =10)|>
+  # sorting top 10 issues by frequency:
+  mutate(issue_tags_separated = reorder(issue_tags_separated, n))|>
+  ggplot(aes(x=n, y=issue_tags_separated)) + 
+  geom_bar(stat='identity')  +
+  theme_bw() +
+  labs(x= "Number of events",
+       y ="Issue",
+       title = "Top 10 issues for right-wing protests",
+       caption= "Data source: Crowd Counting Consortium"
+       )
+
+```
+One *downside* of long format is that it technically changes the unit of analysis for our results because it duplicates observations. This means that, if I attempted to calculate a proportion or percentage using the long data, I would get a distorted result because protests with more issue tags would be given greater "weight" than protests with just 1 or 2.
 
 ### Making dummy data
 
@@ -610,7 +642,7 @@ ggplot(top_issues, aes(x = month, y = n, fill = issue_tags)) +
 The `organizations` variable lists the organizations that were mentioned as being involved in each protest event. Like `issue_tags_summary`, this variable may list multiple values, with each one separated by a semi-colon. 
 
 
-Using one of the unnesting procedures we discussed above, get a table with the 10 `organizations` that were most frequently involved in protests during the time period covered by this data set.
+Using one of the unnesting procedures we discussed above, present a table or bar plot with the 10 `organizations` that were most frequently involved in protests during the time period covered by this data set.
 
 
 ```{r}
@@ -645,5 +677,5 @@ Briefly discuss your results and try to offer an explanation for any noteworthy 
 ```
 
 
-```
+
 
