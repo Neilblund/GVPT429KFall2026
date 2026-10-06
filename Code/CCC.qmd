@@ -1,5 +1,5 @@
 ---
-title: "CCC"
+title: "Working with CCC data"
 editor: visual
 code-annotations: hover
 format:
@@ -23,9 +23,8 @@ set.seed(1000)
 ```
 
 
-### The CCC data
 
-We'll use data from the Crowd Counting Consortium (CCC). The CCC covers U.S. protest events from 2017 to the present, with new updates each week. These data are collected using a combination of webcrawling, social media analysis, and crowd-sourced contributions. The time frame and geographic scope is narrower compared to sources like ACLED, but they also tend to catch more events and offer a higher level of detail about each one.
+In this notebook, we'll work with data from the Crowd Counting Consortium (CCC). The CCC covers U.S. protest events from 2017 to the present, with new updates each week. These data are collected using a combination of webcrawling, social media analysis, and crowd-sourced contributions. The time frame and geographic scope is narrower compared to some other sources we'll look at, but they also tend to catch more events and offer a higher level of detail about each one.
 
 You can access the CCC data from the [Harvard Dataverse Site](https://dataverse.harvard.edu/dataverse/crowdcountingconsortium/). Note that they have three separate files that cover different time frames and may contain slightly different coding rules and variables. For the sake of simplicity, we'll work with just the most recent data, but for your own analyses you may want to create a single combined data set.
 
@@ -37,7 +36,7 @@ You can access the CCC data from the [Harvard Dataverse Site](https://dataverse.
 
 
 
-###Setup and Data import
+## Setup and Data import
 
 First, install these packages (if needed):
 
@@ -336,8 +335,10 @@ The ?! is a negative lookahead, which means "exclude strings that match the foll
 You can read a bit more about using regular expressions [here](https://www.regular-expressions.info/). I generally recommend using a regular expression tester like [regex101.com](https://regex101.com/) to develop and test regular expressions before you write them in code.
 
 
-# Tracking events over time
+## Tracking events over time
 
+
+We'll often want to track the number of protest events or their characteristics over a longer time frame to identify trends. We'll walk through some strategies we can use to convert event-level data into data that can show us the amount of activity on a weekly, monthly, or rolling basis.
 
 Start by getting a count of the number of events where "immigration" was at least one of the issues tagged:
 
@@ -635,9 +636,9 @@ ggplot(top_issues, aes(x = month, y = n, fill = issue_tags)) +
 
 
 
-## On your own
+# On your own
 
-### Question 1
+## Question 1
 
 The `organizations` variable lists the organizations that were mentioned as being involved in each protest event. Like `issue_tags_summary`, this variable may list multiple values, with each one separated by a semi-colon. 
 
@@ -652,7 +653,7 @@ Using one of the unnesting procedures we discussed above, present a table or bar
 
 
 
-### Question 2
+## Question 2
 
 
 Write a regular expression to get a count of events where one of the `participant_measures` included riding bicycles. Write your expression in a way that will ensure you capture common synonyms for "bicycle".
@@ -663,7 +664,7 @@ Write a regular expression to get a count of events where one of the `participan
 
 ```
 
-### Question 3
+## Question 3
 
 Create a line plot showing a rolling count of the number of right-wing protests since January 1, 2026. (hint: use the `valence` variable to identify whether protests were right or left-leaning). Be sure to add appropriate axis labels, title, caption etc. so that your plot is relatively self-explanatory.
 

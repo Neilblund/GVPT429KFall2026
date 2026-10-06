@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>CCC</title>
+<title>Working with CCC data</title>
 <style>
 
 code{white-space: pre-wrap;}
@@ -3505,7 +3505,7 @@ window.onload = function() {
     <h2 id="toc-title">Table of contents</h2>
    
   <ul>
-  <li><a href="#the-ccc-data" id="toc-the-ccc-data" class="nav-link active" data-scroll-target="#the-ccc-data">The CCC data</a></li>
+  <li><a href="#setup-and-data-import" id="toc-setup-and-data-import" class="nav-link active" data-scroll-target="#setup-and-data-import">Setup and Data import</a></li>
   <li><a href="#basic-descriptives" id="toc-basic-descriptives" class="nav-link" data-scroll-target="#basic-descriptives">Basic Descriptives</a></li>
   <li><a href="#unnesting-long-data-and-dummifying" id="toc-unnesting-long-data-and-dummifying" class="nav-link" data-scroll-target="#unnesting-long-data-and-dummifying">Unnesting, long data, and dummifying</a>
   <ul>
@@ -3513,14 +3513,12 @@ window.onload = function() {
   <li><a href="#making-dummy-data" id="toc-making-dummy-data" class="nav-link" data-scroll-target="#making-dummy-data">Making dummy data</a></li>
   </ul></li>
   <li><a href="#filtering-text" id="toc-filtering-text" class="nav-link" data-scroll-target="#filtering-text">Filtering text</a></li>
-  <li><a href="#tracking-events-over-time" id="toc-tracking-events-over-time" class="nav-link" data-scroll-target="#tracking-events-over-time">Tracking events over time</a>
-  <ul>
+  <li><a href="#tracking-events-over-time" id="toc-tracking-events-over-time" class="nav-link" data-scroll-target="#tracking-events-over-time">Tracking events over time</a></li>
   <li><a href="#on-your-own" id="toc-on-your-own" class="nav-link" data-scroll-target="#on-your-own">On your own</a>
-  <ul class="collapse">
+  <ul>
   <li><a href="#question-1" id="toc-question-1" class="nav-link" data-scroll-target="#question-1">Question 1</a></li>
   <li><a href="#question-2" id="toc-question-2" class="nav-link" data-scroll-target="#question-2">Question 2</a></li>
   <li><a href="#question-3" id="toc-question-3" class="nav-link" data-scroll-target="#question-3">Question 3</a></li>
-  </ul></li>
   </ul></li>
   </ul>
 </nav>
@@ -3531,7 +3529,7 @@ window.onload = function() {
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<h1 class="title">CCC</h1>
+<h1 class="title">Working with CCC data</h1>
 </div>
 
 
@@ -3548,16 +3546,15 @@ window.onload = function() {
 </header>
 
 
-<section id="the-ccc-data" class="level3">
-<h3 class="anchored" data-anchor-id="the-ccc-data">The CCC data</h3>
-<p>We’ll use data from the Crowd Counting Consortium (CCC). The CCC covers U.S. protest events from 2017 to the present, with new updates each week. These data are collected using a combination of webcrawling, social media analysis, and crowd-sourced contributions. The time frame and geographic scope is narrower compared to sources like ACLED, but they also tend to catch more events and offer a higher level of detail about each one.</p>
+<p>In this notebook, we’ll work with data from the Crowd Counting Consortium (CCC). The CCC covers U.S. protest events from 2017 to the present, with new updates each week. These data are collected using a combination of webcrawling, social media analysis, and crowd-sourced contributions. The time frame and geographic scope is narrower compared to some other sources we’ll look at, but they also tend to catch more events and offer a higher level of detail about each one.</p>
 <p>You can access the CCC data from the <a href="https://dataverse.harvard.edu/dataverse/crowdcountingconsortium/">Harvard Dataverse Site</a>. Note that they have three separate files that cover different time frames and may contain slightly different coding rules and variables. For the sake of simplicity, we’ll work with just the most recent data, but for your own analyses you may want to create a single combined data set.</p>
 <ul>
 <li><p><a href="https://ash.harvard.edu/programs/crowd-counting-consortium/">Website</a></p></li>
 <li><p><a href="https://dataverse.harvard.edu/dataverse/crowdcountingconsortium/">Dataverse</a></p></li>
 <li><p><a href="https://dataverse.harvard.edu/file.xhtml?fileId=10808412&amp;version=10.1">Codebook for the current wave</a></p></li>
 </ul>
-<p>###Setup and Data import</p>
+<section id="setup-and-data-import" class="level2">
+<h2 class="anchored" data-anchor-id="setup-and-data-import">Setup and Data import</h2>
 <p>First, install these packages (if needed):</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">install.packages</span>(<span class="fu">c</span>(<span class="st">&quot;zoo&quot;</span>, <span class="st">&quot;paletteer&quot;</span>))</span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
@@ -3930,8 +3927,9 @@ window.onload = function() {
 <p>The ?! is a negative lookahead, which means “exclude strings that match the following patterns”. So this is a way to catch a string like “Goucher College” while excluding strings like “College Avenue”</p>
 <p>You can read a bit more about using regular expressions <a href="https://www.regular-expressions.info/">here</a>. I generally recommend using a regular expression tester like <a href="https://regex101.com/">regex101.com</a> to develop and test regular expressions before you write them in code.</p>
 </section>
-<section id="tracking-events-over-time" class="level1">
-<h1>Tracking events over time</h1>
+<section id="tracking-events-over-time" class="level2">
+<h2 class="anchored" data-anchor-id="tracking-events-over-time">Tracking events over time</h2>
+<p>We’ll often want to track the number of protest events or their characteristics over a longer time frame to identify trends. We’ll walk through some strategies we can use to convert event-level data into data that can show us the amount of activity on a weekly, monthly, or rolling basis.</p>
 <p>Start by getting a count of the number of events where “immigration” was at least one of the issues tagged:</p>
 <div class="cell">
 <div class="code-copy-outer-scaffold"><div class="sourceCode cell-code" id="cb17"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a>immigration_counts<span class="ot">&lt;-</span>ccc<span class="sc">|&gt;</span></span>
@@ -4188,22 +4186,22 @@ window.onload = function() {
 </div>
 </div>
 </div>
-<section id="on-your-own" class="level2">
-<h2 class="anchored" data-anchor-id="on-your-own">On your own</h2>
-<section id="question-1" class="level3">
-<h3 class="anchored" data-anchor-id="question-1">Question 1</h3>
+</section>
+<section id="on-your-own" class="level1">
+<h1>On your own</h1>
+<section id="question-1" class="level2">
+<h2 class="anchored" data-anchor-id="question-1">Question 1</h2>
 <p>The <code>organizations</code> variable lists the organizations that were mentioned as being involved in each protest event. Like <code>issue_tags_summary</code>, this variable may list multiple values, with each one separated by a semi-colon.</p>
 <p>Using one of the unnesting procedures we discussed above, present a table or bar plot with the 10 <code>organizations</code> that were most frequently involved in protests during the time period covered by this data set.</p>
 </section>
-<section id="question-2" class="level3">
-<h3 class="anchored" data-anchor-id="question-2">Question 2</h3>
+<section id="question-2" class="level2">
+<h2 class="anchored" data-anchor-id="question-2">Question 2</h2>
 <p>Write a regular expression to get a count of events where one of the <code>participant_measures</code> included riding bicycles. Write your expression in a way that will ensure you capture common synonyms for “bicycle”.</p>
 </section>
-<section id="question-3" class="level3">
-<h3 class="anchored" data-anchor-id="question-3">Question 3</h3>
+<section id="question-3" class="level2">
+<h2 class="anchored" data-anchor-id="question-3">Question 3</h2>
 <p>Create a line plot showing a rolling count of the number of right-wing protests since January 1, 2026. (hint: use the <code>valence</code> variable to identify whether protests were right or left-leaning). Be sure to add appropriate axis labels, title, caption etc. so that your plot is relatively self-explanatory.</p>
 <p>Briefly discuss your results and try to offer an explanation for any noteworthy spikes in activity that you can identify.</p>
-</section>
 </section>
 </section>
 
