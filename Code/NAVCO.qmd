@@ -3,7 +3,7 @@ title: "Non-violence and NAVCO"
 editor: visual
 format:
   html:
-    df-print: paged
+    df-print: kable
     toc: true
     toc-location: left
     toc-depth: 4
@@ -15,6 +15,13 @@ format:
 ```{r setup, include=FALSE}
 
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+knit_print.data.frame = function(x, ...) {
+  res = paste(c("", "", 
+                knitr::kable(x, digits = 2) |> 
+                  kableExtra::kable_styling()), collapse = "\n")
+  knitr::asis_output(res)
+}
 
 ```
 
@@ -43,6 +50,8 @@ navco1_raw <- get_dataframe_by_name(
 
 
 ```
+
+
 
 We'll do some recoding to the raw data to get it in a usable format for analysis:
 
@@ -398,18 +407,39 @@ Still, none of this is particular intuitive! So once again there's a lot to be s
 
 library(marginaleffects)
 
-out<-avg_comparisons(model)
-out
 
 ```
 
+```{r, eval=FALSE}
+out<-avg_comparisons(model)
+out
+
+
+```
+
+
+```{r, echo=FALSE}
+out<-avg_comparisons(model)
+
+knitr::kable(out, digits=2)
+
+```
 This output shows the average expected *change* in the predicted probability of each outcome for non-violent movements relative to violent movements. Non-violent movements are 28 percentage points more likely to be successful than violent movements.
 
-```{r}
+We can use `avg_predictions` to see the predicted probability of each outcome under scenarios where all movements were violent vs. non-violent.
+
+```{r, eval=FALSE}
 preds<-avg_predictions(model, variables='nonviol')
 preds
 ```
 
+```{r, echo=FALSE}
+preds<-avg_predictions(model, variables='nonviol')
+knitr::kable(out, digits=2)
+```
+
+
+Here's how we might visualize the results:
 
 ```{r}
 #| fig-width: 10
@@ -460,18 +490,34 @@ exp(coef(model2))|>t()
 
 We can use the `avg_comparisons`
 
-```{r}
+```{r, eval=FALSE}
 avg_comparisons(model2)
 
 ```
 
+```{r, echo=FALSE}
 
-And we'll pull out our average predictions by tactic type:
 
-```{r}
+knitr::kable(avg_comparisons(model2)
+, digits=2)
+
+
+```
+
+And we'll pull out our average predictions by tactic type and plot the results:
+
+```{r, eval=FALSE}
 
 preds<-avg_predictions(model2, variables='nonviol')
 preds
+
+
+```
+
+```{r, echo=FALSE}
+
+preds<-avg_predictions(model2, variables='nonviol')
+knitr::kable(preds, digits=2)
 
 
 ```
