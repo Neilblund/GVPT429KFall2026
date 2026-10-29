@@ -1,0 +1,538 @@
+---
+title: "Non-violence and NAVCO"
+editor: visual
+format:
+  html:
+    df-print: paged
+    toc: true
+    toc-location: left
+    toc-depth: 4
+    smaller: true
+    self-contained: true
+    code-annotations: hover
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
+
+```
+
+## NAVCO Data
+
+We'll use Chenoweth's NAVCO data to look at the relationship between non-violence and movement outcomes. The project data is available through the Harvard Dataverse.
+
+There are currently multiple different versions of the data. The 2008 paper used data from Version 1.1, so we'll use that here even though there is a more recent update available.
+
+```{r}
+library(tidyverse)
+library(dataverse)
+library(paletteer)
+library(gtsummary)
+
+
+
+# loading NAVCO version 1.1
+navco1_raw <- get_dataframe_by_name(
+  filename = 'NAVCO 1.1.tab',  
+  dataset = 'doi:10.7910/DVN/YLLHEE',             
+  server = 'dataverse.harvard.edu',                
+  original = TRUE,                                 
+  .f = haven::read_dta                            
+)
+
+
+```
+
+We'll do some recoding to the raw data to get it in a usable format for analysis:
+
+```{r}
+navco1 <- navco1_raw |>
+  mutate(
+    defect = factor(
+      defect,
+      levels = c(0, 1),
+      labels = c("No security force defections", "Security force defections")
+    ),
+    outcome = factor(
+      outcome,
+      levels = c(3, 4, 5),
+      labels = c("Failure", "Partial success", "Success")
+    ),
+    regaid = factor(
+      regaid,
+      levels = c(0, 1),
+      labels = c(
+        "Regime did not recieve state support",
+        "Regime recieved state support"
+      )
+    ),
+    regviol = factor(
+      regviol,
+      levels = c(0, 1),
+      labels = c("No major regime repression;", "Major regime repression")
+    ),
+    viol = factor(
+      viol,
+      levels = c(0, 1),
+      labels = c("Primarily non-violent", "Primarily violent")
+    ),
+    nonviol = factor(
+      nonviol,
+      levels = c(0, 1),
+      labels = c("Primarily violent", "Primarily non-violent")
+    ),
+    violsim = factor(
+      violsim,
+      levels = c(0, 1),
+      labels = c("No violent flank", "Violent flank")
+    ),
+    statesup = factor(
+      statesup,
+      levels = c(0, 1),
+      labels = c("No state support", "State support")
+    ),
+    sdirect = factor(
+      sdirect,
+      levels = c(0 , 1),
+      labels = c("No sanctions", "Sanctions")
+    ),
+    goals = case_when(
+      secession == 1 ~ "Secession",
+      fselfdet == 1 ~ "Self-determination",
+      regchange == 1 ~ "Regime change",
+      other == 1 ~ "Other"
+    ),
+    time_period = case_when(eyear >=1949  & eyear <=1991 ~ "Cold War",
+                            eyear >1991 ~ "post-Cold War",
+                            .default = "Pre-Cold War"
+                            )|>
+      factor(levels= c("Pre-Cold War", "Cold War", "post-Cold War"))
+    )
+
+
+
+```
+
+
+## Changes over time
+
+We can start  by looking at the change in violent and non-violent tactics over time. One notable feature of these data is that there's been a marked increase in the share of non-violent movements since the 1900s. There's also a notable spike in the use of non-violence around 1980/1990.
+
+```{r}
+navco1|>
+  mutate(decade = factor(floor(eyear / 10) * 10)) |>
+  count(decade, nonviol)|>
+  complete(decade, 
+           fill=list(n=0), 
+           nesting(nonviol))|>
+  group_by(decade)|>
+  mutate(proportion = n/sum(n))|>
+  ggplot(aes(x=decade, y= proportion, color=nonviol, group=nonviol)) + 
+  geom_point(size=2) + 
+  geom_line(lwd=1) +
+  theme_bw() +
+  labs(x="Ending Decade", 
+       y='Percent of movements',
+       caption = "Source: NAVCO 1.1",
+       title = "Movements by tactic and decade",
+       color = "Primary tactic"
+       ) +
+    scale_y_continuous(labels = scales::percent) +
+  scale_colour_paletteer_d("khroma::highcontrast") # theme from https://pmassicotte.github.io/paletteer_gallery/#qualitative
+
+ 
+
+
+
+```
+
+## Comparisons: violent and non-violent campaigns
+
+How do the outcomes compare for non-violent and violent campaigns? We can get a sense for the relationship here by calculating the proportion of success/partial success/ and failure for each type of campaign:
+
+```{r}
+
+outcome_counts<-navco1|>
+  count(outcome, nonviol)|>
+  group_by(nonviol)|>
+  mutate(proportion = n / sum(n))
+
+
+```
+
+We can use a bar plot to visualize our results:
+
+```{r}
+
+ggplot(outcome_counts, aes(x=nonviol, y=proportion, fill = outcome)) + 
+  geom_bar(stat='identity') +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "tactics",
+       y = '% success',
+       title ='Campaign outcomes by tactic',
+       caption = 'Source: NAVCO Version 1.1'
+       ) +
+  scale_fill_paletteer_d("nationalparkcolors::Badlands")
+
+
+
+
+
+```
+
+One question that might arise here is whether the difference in outcomes is statistically distinguishable from what we might see as the result of random chance. Since our outcomes here are all categorical, we can use a $\chi^2$ test to calculate the probability of seeing this distribution of outcomes if there is no relationship between movement tactics and outcomes.
+
+One way to do this is by creating a cross tab and then using the `chisq.test` function:
+
+```{r}
+
+table(navco1$nonviol, navco1$outcome)|>
+  chisq.test()
+
+
+```
+
+Alternatively, we can create a formatted version of this table by using `add_p` with `tbl_summary` (both commands from the [`gtsummary`](https://www.danieldsjoberg.com/gtsummary/index.html) package.)
+
+```{r}
+
+navco1|>
+  select(nonviol, outcome)|>
+  tbl_summary(by=nonviol)|>
+  add_p()
+
+
+```
+
+## Tactics and defections
+
+How do violence and non-violence relate to the probability of security force defections (`defect`) in this data? Is the relationship statistically significant?
+
+```{r}
+# Code here
+
+
+```
+
+## Controlled comparison: violent flanks
+
+Does the presence of a violent flank within a non-violent movement influence the probability of success? Re-examine the relationship of non-violence on movement success separately for movements with and without a simultaneous violent movement (`violsim`)
+
+```{r}
+# Code here
+
+
+
+```
+
+## Multinomial logistic regression
+
+Chenoweth uses multinomial logistic regression to examine the effects of tactics while controlling for multiple movement characteristics.
+
+Recall that logistic regression models outcomes using the logged odds, or the probability that Y = 1 compared to the probability that Y = 0:
+
+
+$$
+\text{log odds} =  \text{ln}\frac{p}{1-p}
+$$
+
+
+To convert log odds to predicted probabilities for a given model, we would use this formula:
+
+$$
+\text{Pr}(Y=1|\beta_0 + B_1X_1 + B_2X_2...) =  \frac{e^{(\beta_0 + B_1X_1 + B_2X_2...)}}{1+ e^{(\beta_0 + B_1X_1 + B_2X_2...)}}
+$$
+
+By contrast, a multinomial regression models model outcomes using the logged ratio of $Y = k$ compared to the probability that $Y = j$, where "$j$" is some excluded baseline category.
+
+$$
+\text{ln}\frac{p_k}{p_j}
+$$ 
+
+
+To convert this back into a set of probabilities, we could use this formula:
+
+$$
+\text{Pr}(Y=k|\beta_0 + B_{k1}X_1 + B_{k2}X_2...) =  \frac{e^{(\beta_0 + B_{k1}X_1 + B_{k2}X_2...)}}{1 + \sum^{K-1}_{j=1} e^{(\beta_0 + B_{j1}X_1 + B_{j2}X_2...)}}
+$$
+
+Exponentiating the value of a coefficient from a multinomial logit would give us the multiplicative change in the relative risk of $Y=k$ vs. $Y=j$ for each one unit change in $x$.
+
+### Running a multinomial logit
+
+We'll use a multinomial logit to look at the probability of success, failure, or partial success given that a group primarily uses non-violence. Note that this (shouldn't) give us dramatically different results from what we got when we ran a simple $\chi^2$ test, since we're just including a single predictor. However, this framework will let us include additional control variables when we estimate the model.
+
+```{r}
+
+library(nnet)
+model<-multinom(outcome ~ 
+                  nonviol,
+         data=navco1)
+
+
+
+```
+Looking at the summary output, I can see that there are actually two sets of coefficient values, one for each of the $K-1$ potential outcomes. Note that the excluded category here is "failure", so the coefficients here represent the logged odds of each outcome relative to the logged odds of failure:
+
+```{r}
+summary(model)
+
+
+```
+
+
+
+
+To interpret these as ratios, we can exponentiate the coefficients. (For the sake of readability, I'm also using `t()` to transpose the results)
+
+```{r}
+
+exp(coef(model))|>t()
+
+
+```
+
+
+According to these results, primarily non-violent movements have 5.4-fold higher odds of partial success relative to failure and 6-fold higher odds of full success relative to failure.
+
+How would we convert these results back into probabilities?
+
+### Probability of failure
+
+To get the probability of failure for a non-violent movement, we can just divide 1 by the odds of success for the other two outcomes.
+
+```{r}
+
+xvalues<-c(1, 1) # constant term + non-violence = 1 
+denom<-1 + exp(coef(model)[1,] %*% xvalues)  + exp(coef(model)[2,] %*% xvalues)
+failure<-1/denom
+failure
+
+
+```
+
+A non-violent movement has a roughly 22% chance of failure.
+
+### Partial success
+
+To get the probability of partial success, we need to divide the odds of partial success for a non-violent movement by the odds for the remaining outcomes:
+
+```{r}
+
+
+num<-exp(coef(model)[1,] %*% xvalues)
+
+denom<-1 + exp(coef(model)[1,] %*% xvalues)  + exp(coef(model)[2,] %*% xvalues)
+
+# probability of partial success
+partial_success<-num/denom
+partial_success
+
+```
+
+A non-violent movement has a roughly 25% chance of partial success.
+
+### Full success
+
+To get the probability of full success, we need to divide the odds of full success for a non-violent movement by the odds for the remaining outcomes.
+
+```{r}
+
+num<-exp(coef(model)[2,] %*%  xvalues)
+
+
+denom<-1 + exp(coef(model)[1,] %*% xvalues)  + exp(coef(model)[2,] %*% xvalues)
+
+# probability of success:
+success<-num/denom
+
+success
+
+```
+
+A non-violent movement has a roughly 54% chance of full success.
+
+
+### Using predict
+
+That's a lot of code! Fortunately, can also just the the "predict" function to get the probabilities of each outcome in just one step:
+
+```{r}
+
+nonviolent<-predict(model, 
+        newdata=data.frame(nonviol = "Primarily non-violent"),
+        type='probs'
+        )
+
+
+violent<-predict(model, 
+        newdata=data.frame(nonviol = "Primarily violent"),
+        type='probs'
+        )
+
+```
+
+These calculations can give a better sense of what we mean by interpreting the exponentiated coefficients as a "relative risk ratio": they represent the multiplicative change in the relative risk of success/partial success vs. failure for non-violent vs. violent campaigns:
+
+```{r}
+
+
+
+# effect of non-violence on the relative risk ratio for partial success vs. failure
+(nonviolent["Partial success"] / nonviolent["Failure"] ) / (violent["Partial success"] / violent["Failure"])
+
+# effect of non-violence on the relative risk ratio for full success vs. failure
+(nonviolent["Success"] / nonviolent["Failure"] ) / (violent["Success"] / violent["Failure"])
+
+
+```
+
+
+
+Still, none of this is particular intuitive! So once again there's a lot to be said in favor of converting coefficient values into effects on predicted probabilities at some different levels of each IV. The `avg_comparisons` function from the [marginal effects package](https://marginaleffects.com/) will do this for us automatically. When reading the output here, we can interpret the Estimate for each outcome group as the average change in the probability of each outcome under a scenario where all campaigns were violent compared to a scenario where all campaigns were non-violent.
+
+```{r}
+
+
+library(marginaleffects)
+
+out<-avg_comparisons(model)
+out
+
+```
+
+This output shows the average expected *change* in the predicted probability of each outcome for non-violent movements relative to violent movements. Non-violent movements are 28 percentage points more likely to be successful than violent movements.
+
+```{r}
+preds<-avg_predictions(model, variables='nonviol')
+preds
+```
+
+
+```{r}
+#| fig-width: 10
+#| fig-height: 4
+#| fig-align: "center"
+
+ggplot(preds, aes(x=nonviol, y=estimate, fill=group)) + 
+  geom_col( position='dodge') +
+  geom_errorbar(aes(ymin = conf.low, ymax=conf.high, width=0.2),
+                 position= position_dodge(width = 0.9)
+                ) +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "tactics",
+       y = '% success',
+       title ='Predicted campaign outcomes by tactic',
+       caption = 'Source: NAVCO Version 1.1',
+       fill = 'Outcome'
+       ) +
+  scale_fill_paletteer_d("nationalparkcolors::Badlands") +
+  facet_wrap(~group) +
+  theme(legend.position = "none") 
+
+```
+
+
+
+
+### Controlled multinomial logit
+
+What happens when we include additional covariates? Let's add a control for "target polity", which is a measure of the level of democracy in the country where the movement took place: 
+
+```{r}
+# Code here
+
+model2<-multinom(outcome ~ 
+                  nonviol + tpolity,
+         data=navco1) 
+```
+
+
+Here are our risk ratios:
+
+```{r}
+exp(coef(model2))|>t()
+```
+
+
+We can use the `avg_comparisons`
+
+```{r}
+avg_comparisons(model2)
+
+```
+
+
+And we'll pull out our average predictions by tactic type:
+
+```{r}
+
+preds<-avg_predictions(model2, variables='nonviol')
+preds
+
+
+```
+
+```{r}
+#| fig-width: 10
+#| fig-height: 4
+#| fig-align: "center"
+
+ggplot(preds, aes(x=nonviol, y=estimate, fill=group)) + 
+  geom_col( position='dodge') +
+  geom_errorbar(aes(ymin = conf.low, ymax=conf.high, width=0.2),
+                 position= position_dodge(width = 0.9)
+                ) +
+  theme_bw() +
+  scale_y_continuous(labels = scales::percent) +
+  labs(x = "tactics",
+       y = '% success',
+       title ='Predicted campaign outcomes by tactic',
+       caption = 'Source: NAVCO Version 1.1',
+       fill = 'Outcome'
+       ) +
+  scale_fill_paletteer_d("nationalparkcolors::Badlands") +
+  facet_wrap(~group) +
+  theme(legend.position = "none") 
+
+```
+
+
+
+
+Use the code above as a jumping off point. Run the same model after including controls for whether the regime was sanctioned (`sdirect`) for their use of repression, and logged membership (`lmembers`). Does the marginal effect of non-violence change? Is the relationship still statistically significant at conventional levels?
+
+
+
+```{r}
+# Code here
+
+```
+
+
+
+
+#### Note
+
+
+The data here *should* allow us to replicate table 1 in Stephan and Chenoweth's 2008 paper. However, there are some discrepancies here even when we include the exact same covariates discussed in the paper. This isn't especially unusual: it might be a function of some additional pre-processing steps not mentioned in the text, or it could even be caused by using different analysis software.
+
+Fortunately, none of the discrepancies really change the substantive interpretation of results, but they don't match exactly:
+
+```{r}
+
+
+
+model_full<-multinom(outcome ~ nonviol + defect + statesup + sdirect + regaid + tpolity + 
+    lduration + time_period, data=navco1)
+
+# getting exponentiated coefficents and re-arranging to more closely resemble the layout in the paper
+t(exp(coef(model_full)))[-1L,c(2,1)] 
+
+
+```
+
+
