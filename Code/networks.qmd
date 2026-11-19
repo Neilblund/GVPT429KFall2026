@@ -1,0 +1,427 @@
+---
+title: "Networks"
+editor: visual
+code-annotations: hover
+bibliography: ../Slides/references.bib
+format:
+  html:
+    embed-resources: true
+    df-print: kable
+    toc: true
+    toc-location: left
+    toc-depth: 4
+    smaller: true
+    self-contained: true
+    fig-format: svg
+    code-tools: true
+lightbox: true
+---
+
+```{r}
+#| echo: false
+
+knitr::opts_chunk$set(
+  warning = FALSE,
+  message = FALSE
+)
+```
+
+```{r}
+#| echo: false
+
+
+library(tidyverse)
+floc<-here::here("Data", "TSMOD.ZIP")
+
+if(!file.exists(floc)){
+  download.file('https://melaniemhughes.com/s/TSMOD-STATA.zip',
+                destfile=floc,
+                mode='wb'
+  )
+}
+tsmod<-haven::read_dta(floc)
+tsmod<-tsmod|>
+  as_factor()|>
+  mutate(orgid = paste0(orgname, yearbookid, year))|>
+  distinct(orgid, .keep_all=TRUE)
+
+
+```
+
+We'll start by looking at some data from the [Transnational social movement organizations dataset (TSMOD), 1953-2013](https://melaniemhughes.com/international-organizations) [@smith2019transnational] The code below will download and import the data into R automatically, and you can click the link above and take a look at the codebook to get a bit more detail on how it's set up.
+
+If needed, install the packages below:
+
+```{r}
+#| eval: false
+#| echo: true
+install.packages("igraph")
+install.packages("dataverse")
+install.packages("visNetwork")
+install.packages("fixest")
+
+
+```
+
+```{r}
+#| eval: false
+library(tidyverse)
+
+if(!file.exists('TSMOD.zip')){
+  download.file('https://melaniemhughes.com/s/TSMOD-STATA.zip',
+                destfile='TSMOD.zip',
+                mode='wb'
+  )
+}
+tsmod<-haven::read_dta('TSMOD.zip')
+
+# making a unique ID and filtering out some duplicated observations.
+tsmod<-tsmod|>
+  as_factor()|>
+  mutate(orgid = paste0(orgname, yearbookid, year))|>
+  distinct(orgid, .keep_all=TRUE)
+
+```
+
+Each row of this dataset represents a transnational SMO in a single year. There's data on things like membership structure, goals, and the countries where this group has members, organizations, or branches.
+
+We can use this data set to do things like track the number of TSMOs over time/by focus:
+
+```{r}
+#| code-fold: true
+
+
+yearly_counts<-tsmod|>
+  group_by(year, hrights)|>
+  count()|>
+  ungroup()|>
+  complete(year, nesting(hrights), fill=list(n=0))
+
+ggplot(yearly_counts, aes(x=year, y=n, color=hrights)) + 
+  geom_line() +
+  geom_point() +
+  theme_bw() +
+  labs(y = 'Number of organizations',
+       x = 'Year',
+       color = 'Human Rights Focus',
+       title = 'Transnational SMOs by year',
+       caption = 'Source: Transnational social movement organizations dataset (TSMOD), 1953-2013'
+       ) 
+ 
+
+
+
+
+```
+
+Or look at long-term trends in where TSMOs are headquartered over time:
+
+```{r}
+#| code-fold: true
+
+
+yearly_counts<-tsmod|>
+  group_by(year, hqsouth)|>
+  count()|>
+  ungroup()|>
+  complete(year, nesting(hqsouth), fill=list(n=0))|>
+  group_by(year)|>
+  mutate(proportion = n/sum(n))|>
+  ungroup()|>
+  filter(year!=1989) # removing a year that might have some errors
+
+ggplot(yearly_counts, aes(x=year, y=proportion, color=hqsouth)) + 
+  geom_line() +
+  geom_point() +
+  theme_bw() +
+  labs(y = '% of organizations',
+       x = 'Year',
+       color = 'Headquarters',
+       title = 'Transnational SMOs Headquarters by year',
+       caption = 'Source: Transnational social movement organizations dataset (TSMOD), 1953-2013'
+       ) +
+  scale_y_continuous(labels = scales::label_percent()) +
+  scale_color_manual(values=c("red", "black"))
+
+
+```
+
+### Network data
+
+For this analysis, we're going to try to get a sense of the Transnational Activist Network around LGBTI issues over this time period. For the sake of simplicity and computational speed, we'll start by looking at just the characteristics of the network for 2013, but we'll expand this analysis further down.
+
+```{r}
+
+tsmod_subset<-tsmod|>
+  # keep rows where LGBT rigts are at least one of the goals of the organization
+  filter(as.numeric(goal1)==28 | as.numeric(goal2)==28 | as.numeric(goal3)==28 | as.numeric(goal4)==28)|>
+  # and where the year is 2013
+  filter(year  == 2013)
+
+```
+
+We're going to turn this data into network data to look at country and organization-level connectedness.
+
+In network data, we'll look at **nodes** which represent entities (like people, groups, or countries) and **edges** which represent connections between those entities. We're interested in describing, visualizing and analyzing the pattern of connections and how they might influence global politics.
+
+We can conceptualize the linkages here in two ways:
+
+1.  We can use countries as nodes and treat instances of two countries sharing an organization as an edge.
+2.  We can use organizations as nodes and treat instances where organizations have members in the same country as an edge.
+
+Either of these might be useful for an analysis, but we'll start with option 1: countries as nodes and shared organizational membership as edges. Currently we have data that looks like this, with each row representing a single organization, each column representing a country, and "1" indicating that the SMO has members there:
+
+```{r}
+#| echo: false
+
+tsmod|>
+  filter(as.numeric(goal1)==28 | as.numeric(goal2)==28 | as.numeric(goal3)==28 | as.numeric(goal4)==28)|>
+  filter(year  == 2013)|>
+  arrange(-countrycount)|>
+  select(orgname, algeria, germany, ukraine, benin, spain)|>
+  slice_head(n=10)
+
+
+
+```
+
+For network analysis, we'll start by converting this into an adjacency matrix: a square matrix with one column for each country, one row for each country, and each cell containing the count of the number of shared organizations for country i x j:
+
+```{r}
+#| echo: false
+as<-tsmod_subset|>
+  filter(year  == 2013)|>
+  arrange(-countrycount)|>
+  select(orgname, algeria, germany, ukraine, benin, spain)|>
+  slice_head(n=10)|>
+  column_to_rownames(var="orgname")|>
+  as.matrix()
+
+
+crossprod(as)|>data.frame()
+
+```
+
+In this format, the number in each cell represents the number or weight of the edge between each country node, so Spain-Germany should have a stronger tie than Spain-Algeria.
+
+We'll do this by first select just the `orgid` and the columns containing country membership, then we'll make the data frame into a numeric matrix and calculate the cross product. This should give us a table in the desired format:
+
+```{r}
+connections<-tsmod_subset|>
+  select(orgid, algeria:yugoslav)|> # selecting only orgid and country columns
+  column_to_rownames(var="orgid")|> # using the orgid as a rowname
+  as.matrix()
+country_mat<-crossprod(connections)
+
+# looking at  the first 8 rows and 8 columns
+country_mat[1:8, 1:8]
+
+
+```
+
+Now, we'll convert this adjacency matrix to a network using functions from the `igraph` library, a specialized R package for working with network data:
+
+```{r}
+library(igraph)
+g <- graph_from_adjacency_matrix(country_mat, 
+                                 mode = "undirected", 
+                                 weighted = TRUE,
+                                  diag = FALSE       # Ignores self-ties
+
+                                 )
+
+```
+
+### Descriptive Statistics for network data
+
+We can use our graph object `g` to get some basic descriptive statistics about the entire network:
+
+-   **Number of nodes:** is the number of entities for the entire network.
+
+-   **Number of edges:** is the number (or weighted count) of connections for the entire network.
+
+-   **Density:** the proportion of actual connections divided by the total number of *possible* connections. This should be fairly low because - as you can see from the adjacency matrix - most nodes don't have any connections to each other.
+
+-   **Diameter:** the longest optimal path between any two nodes.
+
+-   **Transitivity:** measures how two nodes connected to a shared third node are also connected to each other. This can be used to get a sense of how "tight-knit" a particular community might be.
+
+Here's how we can get those in R-code
+
+```{r}
+vcount(g) # number of nodes
+ecount(g) # number of edges
+edge_density(g)  # density
+diameter(g)      # diameter
+transitivity(g)  # transitivity/clustering coefficient
+
+
+```
+
+Note that many of these descriptive statistics are only meaningful when comparing between networks. For instance, we might want to visualize the changes in the clustering coefficient over time for LGBT TSMOs by calculating this statistic separately for the same network in each year covered by the database. The drop over time here is consistent with a pattern of TSMOs in this sector becoming more decentralized, more regional or issue-specific, and/or more likely to connect to a single broad umbrella organization rather than having direct org-to-org ties:
+
+```{r}
+#| code-fold: true
+#| cache: true
+
+
+# keep rows where LGBT rigts are at least one of the goals of the organization
+tsmod_lgbt <- tsmod |>
+  filter(
+    as.numeric(goal1) == 28 |
+      as.numeric(goal2) == 28 |
+      as.numeric(goal3) == 28 | as.numeric(goal4) == 28
+  )|>
+  filter(year!=1987)# dropping a year with problematic data
+
+
+years<-unique(tsmod_lgbt$year)
+# empty tibble to hold data
+networkstats<-tibble( 
+  year = years,
+  nodes = NA,
+  edges = NA,
+  edge_density = NA,
+  diameter = NA,
+  transitivity = NA) 
+
+for(i in 1:length(years)){
+  tsmod_year<-tsmod_lgbt|>
+    filter(year == years[i])
+  connections<-tsmod_year|>
+  select(orgid, algeria:yugoslav)|> 
+  drop_na()|>
+  column_to_rownames(var="orgid")|> 
+  as.matrix()
+  adj<-crossprod(connections)
+  g_i <- graph_from_adjacency_matrix(adj,
+                                   mode = "undirected",
+                                   weighted = TRUE,
+                                   diag = FALSE)
+  
+  
+  networkstats$nodes[i] <-   vcount(g_i) # number of nodes
+  networkstats$edges[i] <-   ecount(g_i) # number of edges
+  networkstats$edge_density[i]<-  edge_density(g_i)  # density
+  networkstats$diameter[i]<- diameter(g_i)      # diameter
+  networkstats$transitivity[i] <- transitivity(g_i)  # transitivity
+
+  
+  
+}
+ggplot(networkstats, aes(x=year, y=transitivity)) + 
+  geom_line()  +
+  geom_point() +
+  theme_bw() +
+
+  labs(y = 'Clustering Coefficient',
+       x = 'Year',
+       title = 'Clustering Coefficient by year for LGBT TSMOs',
+       caption = 'Source: Transnational social movement organizations dataset (TSMOD), 1953-2013'
+       )
+
+```
+
+### Network Visualization
+
+Aside from summary statistics for the entire network, one of the most intuitive ways to understand a network is by visualizing it. We'll use the `visNetwork` package to make an interactive network plot. Networks plots use specialized layout algorithms to position each node. The choice of layout is partly a question of aesthetic judgement, but some may be more appropriate than others depending on the network we're exploring. The option `layout = "layout_with_fr"` in the code below uses the Fruchterman-Reingold algorithm, which tends to work well with medium sized networks like this one. When looking at the plot, you should be able to see that nodes that are connected are "close" to one another, and nodes that have a lot of connections are more centrally located, while nodes that are less connected end up towards the outer edge:
+
+```{r}
+
+library(visNetwork)
+
+# removing countries with no connections:
+g_clean <- delete_vertices(g, V(g)[degree(g) == 0])
+# adding a color and a size variable
+V(g_clean)$color <- "steelblue"
+V(g_clean)$size <- 20
+E(g_clean)$value <- E(g_clean)$weight
+
+
+set.seed(42) # set a random number seed
+
+# Render directly in visNetwork
+visIgraph(g_clean, 
+          layout = "layout_with_fr")|>
+  visOptions(highlightNearest = TRUE, nodesIdSelection = TRUE)
+
+```
+
+You can try changing `layout = "layout_with_fr"` to `layout = "layout_with_kk"` or `layout="layout_with_sugiyama"` to see some different layout options.
+
+#### Community Detection
+
+Community detection is a method for grouping together subsets of nodes that tend to be more connected to each other than to other nodes in the network. We can use it to identify and visualize groups of countries that tend to share organizations - and may also share certain policy concerns, geography, interest group coalitions etc. Here's an example using the Louvain community detection algorithm and then color coding each node based on its community assignment:
+
+```{r}
+#| cache: true
+# Run community detection (e.g., Louvain or Leiden)
+set.seed(555)
+comm <- cluster_louvain(g_clean)
+# call comm object to see a list of countries assigned to each community
+# comm
+
+# Assign community membership to the 'group' vertex attribute
+V(g_clean)$group <- membership(comm)
+V(g_clean)$label <- as.character(V(g_clean))
+
+# make a palette and color code nodes
+n_comm <- length(comm)
+palette <- palette.colors(n_comm, palette = "Okabe-Ito")
+V(g_clean)$color <- palette[membership(comm)]
+# Option A: Quick direct plot using visIgraph()
+visIgraph(g_clean, layout = "layout_with_fr") |>
+  visOptions(highlightNearest = TRUE,nodesIdSelection = TRUE)
+
+```
+
+From here, we might try to identify the shared characteristics that explain why countries appear in the same communities. Similar policies? Geography? Institutions?
+
+### Node specific statistics
+
+Finally, we can get statistics about specific nodes from the network data. Here are some common measures that can give a sense of the node's "importance"
+
+-   **Degree**: the number of edges connected to a node.
+
+-   **Betweenness:** measures how often a node appears along the shortest path between two other nodes.
+
+-   **Eigenvector Centrality:** is a weighted measure of both the number and importance of connections to a node. In short: connections to nodes that are themselves highly connected will receive more weight than connections to nodes that are connected to only a few nodes.
+
+-   PageRank
+
+Here's an example of getting these stats for each node and then examining the top 10 results:
+
+```{r}
+degree(g)|>sort()|>tail()   # node degree
+betweenness(g)|>sort()|>tail() # node betweenness
+eigen_centrality(g)$vector|>sort()|>tail()  # eigenvector centrality
+
+
+```
+
+#### Using the stats in an analysis
+
+@velasco2020growing uses a measure of Eigenvector Centrality to measure the relationship between a country's exposure to transnational LGBT rights organizations and their tendency to adopt more LGBT friendly public policies. We'll try doing a simplified version of the same analysis. The dependent variable here is a composite measure of LGBT policies developed by Velasco. Higher values indicate that a country has more progressive policies towards LGBT people, lower scores mean they have more regressive policies.
+
+Our main independent variable will be an interaction term: the first component of the interaction is a scaled measure of Eigenvector Centrality for each country-year in a TSMO network. Higher scores here should indicate that a country is more embedded in the transnational advocacy network around this issue. The second component of the interaction term is a measure of the "global LGBT context", which is Velasco uses as a measure of the overall tenor of the global norms around gay rights. Velasco uses a panel model here. For our simplified version of the model, we'll also include "fixed effects" dummy variables for each year and country in the data.
+
+Unfortunately, Velasco's network data isn't publicly available, but the regression model is shown below:
+
+```{r}
+
+library(dataverse)
+library(fixest)
+velasco<- get_dataframe_by_name(
+  filename = "Velasco_Queer Divide_Data.tab",
+  dataset = "doi:10.7910/DVN/XINDPB",
+  original = TRUE,
+  .f = haven::read_dta,
+  server = "dataverse.harvard.edu"
+)
+
+model <- feols(policy_index ~ lgbt_inc_score  * global_lgbt_context |
+                 year + country,
+               data = velasco)
+summary(model)
+
+```
